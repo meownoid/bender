@@ -1,0 +1,7 @@
+[project]
+name = "bender"
+version = "0.1.0"
+description = "Data bending toolkit"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = []

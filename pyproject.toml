@@ -5,3 +5,6 @@ description = "Data bending toolkit"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = []
+
+[project.scripts]
+bender = "bender:__main__.main"

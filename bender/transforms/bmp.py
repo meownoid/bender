@@ -5,7 +5,7 @@ import numpy as np
 from bender.entity import entity
 from bender.parameter import IntParameter
 from bender.sound import Sound
-from bender.transform import ImageSound, Transform
+from bender.transform import TransformResult, Transform
 
 from PIL import Image, ImageFile
 
@@ -28,10 +28,11 @@ DTYPES = {
             default=54, min_value=0, description="Size of header in bytes to preserve"
         ),
         "sample_size": IntParameter(
+            description="Number of bytes per sample",
             default=1,
             min_value=1,
             max_value=4,
-            description="Number of bytes per sample",
+            clamp=False,
         ),
     },
 )
@@ -40,14 +41,12 @@ class BMPTransform(Transform):
         super().__init__()
 
         self.header_size = header_size
-        self.sample_size = sample_size
-
-    def encode(self, image: Image) -> ImageSound:
         try:
-            dtype = DTYPES[self.sample_size]
+            self.dtype = DTYPES[sample_size]
         except LookupError:
-            raise ValueError(f"Unsupported sample size: {self.sample_size}")
+            raise ValueError(f"Unsupported sample size: {sample_size}")
 
+    def encode(self, image: Image) -> TransformResult:
         with io.BytesIO() as fd:
             image.save(fd, format="BMP")
             fd.seek(0)
@@ -59,22 +58,17 @@ class BMPTransform(Transform):
         }
 
         # raw BMP dwords
-        mono = buffer[self.header_size :].view(dtype)
+        mono = buffer[self.header_size :].view(self.dtype)
         # scale to [0, 1]
-        mono = mono.astype(np.float64) / np.iinfo(dtype).max
+        mono = mono.astype(np.float64) / np.iinfo(self.dtype).max
         # scale to [-1, 1]
         mono = mono * 2.0 - 1.0
 
-        return ImageSound(
+        return TransformResult(
             sound=Sound(left=mono, right=mono, sample_rate=48000), metadata=metadata
         )
 
-    def decode(self, image_sound: ImageSound) -> Image:
-        try:
-            dtype = DTYPES[self.sample_size]
-        except LookupError:
-            raise ValueError(f"Unsupported sample size: {self.sample_size}")
-
+    def decode(self, image_sound: TransformResult) -> Image:
         header = np.frombuffer(
             base64.b64decode(image_sound.metadata["header"].encode("utf-8")),
             dtype=np.uint8,
@@ -84,7 +78,7 @@ class BMPTransform(Transform):
         # scale to [0, 1]
         mono = (mono + 1.0) / 2.0
         # convert to raw BMP dwords
-        mono = (mono * np.iinfo(dtype).max).astype(dtype)
+        mono = (mono * np.iinfo(self.dtype).max).astype(self.dtype)
 
         buffer = np.concatenate([header, mono.view(np.uint8)]).tobytes()
 

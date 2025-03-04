@@ -100,8 +100,3 @@ To list all available algorithms and their parameters:
 ```bash
 bender edit --list
 ```
-
-todo
-
-- jpeg quality argument (https://pillow.readthedocs.io/en/stable/handbook/image-file-formats.html)
-- wav bit depth and sampling rate arguments

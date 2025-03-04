@@ -12,7 +12,7 @@ from watchdog.events import (
 )
 from watchdog.observers import Observer
 
-from bender.cli.transform import transform_options, transform_command
+from bender.cli.transform import transform_options, _transform_command
 from bender.cli.utils import add_options
 
 
@@ -65,12 +65,13 @@ def monitor_command(
     def callback(path: str) -> None:
         click.echo(f"Transforming {path}")
 
-        result_paths = transform_command([Path(path)], **kwargs)
+        result_paths = _transform_command([Path(path)], **kwargs)
 
         if not auto_open:
             return
 
         for result_path in result_paths:
+            click.echo(f"Opening {result_path}")
             click.launch(str(result_path.absolute()), wait=False, locate=False)
 
     event_handler = WatchdogEventHandler(patterns=patterns, callback=callback)

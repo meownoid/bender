@@ -216,28 +216,7 @@ def _list_transforms(ctx, _, value) -> None:
     ctx.exit()
 
 
-@click.command(
-    "transform",
-    help="Convert images to sound and vice versa.",
-)
-@click.argument("files", type=click.Path(exists=True, path_type=Path), nargs=-1)
-@add_options(transform_options)
-@click.option(
-    "--list",
-    is_flag=True,
-    help="List all available transforms and exit.",
-    callback=_list_transforms,
-    expose_value=False,
-    is_eager=True,
-)
-@click.option(
-    "-o",
-    "--output",
-    type=click.Path(file_okay=True, dir_okay=True, writable=True, path_type=Path),
-    help="Output file name.",
-    default=None,
-)
-def transform_command(
+def _transform_command(
     files: Iterable[Path],
     algorithm: str | None,
     parameters: list[tuple[str, str]] | None = None,
@@ -286,3 +265,28 @@ def transform_command(
             )
 
     return result
+
+
+@click.command(
+    "transform",
+    help="Convert images to sound and vice versa.",
+)
+@click.argument("files", type=click.Path(exists=True, path_type=Path), nargs=-1)
+@add_options(transform_options)
+@click.option(
+    "--list",
+    is_flag=True,
+    help="List all available transforms and exit.",
+    callback=_list_transforms,
+    expose_value=False,
+    is_eager=True,
+)
+@click.option(
+    "-o",
+    "--output",
+    type=click.Path(file_okay=True, dir_okay=True, writable=True, path_type=Path),
+    help="Output file name.",
+    default=None,
+)
+def transform_command(*args, **kwargs) -> list[Path]:
+    return _transform_command(*args, **kwargs)

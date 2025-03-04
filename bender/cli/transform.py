@@ -49,7 +49,7 @@ transform_options = [
         "-s",
         "--sample-rate",
         type=click.IntRange(11025, 384000, clamp=True),
-        default=48000,
+        default=None,
         help="Output sound file sample rate.",
     ),
     click.option(
@@ -123,7 +123,7 @@ def _image_to_sound(
     file: Path,
     algorithm: str | None,
     parameters: dict[str, str],
-    sample_rate: int,
+    sample_rate: int | None,
     bit_depth: int,
     output: Path,
     force: bool,
@@ -146,7 +146,7 @@ def _image_to_sound(
     }
 
     dumped_metadata = json.dumps(metadata, indent=2, ensure_ascii=False)
-    unique_id = hashlib.sha1(dumped_metadata.encode("utf-8")).hexdigest()[:8]
+    unique_id = hashlib.sha1(dumped_metadata.encode("utf-8")).hexdigest()[:7]
     stem = file.with_suffix("").stem
 
     if output.is_dir():
@@ -196,7 +196,7 @@ def _sound_to_image(
     if algorithm is None:
         algorithm = metadata["algorithm"]
 
-    parameters = metadata["parameters"].update(parameters)
+    parameters = {**metadata["parameters"], **parameters}
 
     transform = _build_transform(algorithm, parameters)
     image = transform.decode(TransformResult(sound, metadata["metadata"]))
@@ -243,7 +243,7 @@ def transform_command(
     parameters: list[tuple[str, str]] | None = None,
     quality: int = 95,
     bit_depth: int = 24,
-    sample_rate: int = 48000,
+    sample_rate: int | None = None,
     output: Path | None = None,
     force: bool = False,
 ) -> list[Path]:

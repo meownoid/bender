@@ -150,8 +150,8 @@ def _image_to_sound(
     stem = file.with_suffix("").stem
 
     if output.is_dir():
-        sound_path = output / f"{stem}_{unique_id}.wav"
-        metadata_path = output / f"{stem}_{unique_id}.json"
+        sound_path = output / f"{stem}-{unique_id}.wav"
+        metadata_path = output / f"{stem}-{unique_id}.json"
     else:
         sound_path = output
         metadata_path = output.with_suffix(".json")

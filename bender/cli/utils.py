@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import Any
 
 import click
@@ -22,21 +23,32 @@ def add_options(options):
     return _add_options
 
 
-def is_image_file(name):
-    return name.lower().endswith(
-        (".bmp", ".gif", ".jpg", ".jpeg", ".png", ".tif", ".tiff", ".webp")
-    )
+def is_image_file(name: Path | str) -> bool:
+    name = Path(name)
+
+    return name.suffix in [
+        ".bmp",
+        ".gif",
+        ".jpg",
+        ".jpeg",
+        ".png",
+        ".tif",
+        ".tiff",
+        ".webp",
+    ]
 
 
-def is_sound_file(name):
-    return name.lower().endswith((".wav", ".aiff"))
+def is_sound_file(name: Path | str) -> bool:
+    name = Path(name)
+
+    return name.suffix in [".wav", ".aiff"]
 
 
 def parameters_to_dict(parameters: list[tuple[str, str]]) -> dict[str, str]:
     result = {}
     for key, value in parameters:
         if key in result:
-            raise click.BadParameter(f"duplicate parameter {key}")
+            raise click.UsageError(f"duplicate parameter {key}")
 
         result[key] = value
 

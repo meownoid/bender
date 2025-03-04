@@ -1,7 +1,7 @@
+import hashlib
 import importlib
 import json
 import pkgutil
-import secrets
 from pathlib import Path
 from typing import Iterable
 
@@ -109,14 +109,14 @@ def _build_transform(
     transform_entities = _import_transforms()
 
     if algorithm not in transform_entities:
-        raise click.BadParameter(
+        raise click.UsageError(
             f"unknown transform {algorithm}, available: {', '.join(transform_entities)}"
         )
 
     try:
         return transform_entities[algorithm].build(parameters)
     except ValueError as err:
-        raise click.BadParameter(*err.args)
+        raise click.UsageError(*err.args)
 
 
 def _image_to_sound(
@@ -130,27 +130,6 @@ def _image_to_sound(
 ) -> Path:
     if algorithm is None:
         algorithm = DEFAULT_ALGORITHM
-
-    unique_id = secrets.token_hex(4)
-    stem = file.with_suffix("").stem
-
-    if output.is_dir():
-        sound_path = output / f"{stem}_{unique_id}.wav"
-        metadata_path = output / f"{stem}_{unique_id}.json"
-    else:
-        sound_path = output
-        metadata_path = output.with_suffix(".json")
-
-    if not force:
-        if sound_path.exists():
-            raise click.BadParameter(
-                f"{sound_path} already exists, use -f to overwrite"
-            )
-
-        if metadata_path.exists():
-            raise click.BadParameter(
-                f"{metadata_path} already exists, use -f to overwrite"
-            )
 
     image = Image.open(file)
 
@@ -166,8 +145,28 @@ def _image_to_sound(
         "metadata": result.metadata,
     }
 
+    dumped_metadata = json.dumps(metadata, indent=2, ensure_ascii=False)
+    unique_id = hashlib.sha1(dumped_metadata.encode("utf-8")).hexdigest()[:8]
+    stem = file.with_suffix("").stem
+
+    if output.is_dir():
+        sound_path = output / f"{stem}_{unique_id}.wav"
+        metadata_path = output / f"{stem}_{unique_id}.json"
+    else:
+        sound_path = output
+        metadata_path = output.with_suffix(".json")
+
+    if not force:
+        if sound_path.exists():
+            raise click.UsageError(f"{sound_path} already exists, use -f to overwrite")
+
+        if metadata_path.exists():
+            raise click.UsageError(
+                f"{metadata_path} already exists, use -f to overwrite"
+            )
+
     result.sound.save(sound_path, sample_rate=sample_rate, bit_depth=bit_depth)
-    metadata_path.write_text(json.dumps(metadata, indent=2, ensure_ascii=False))
+    metadata_path.write_text(dumped_metadata)
 
     return sound_path
 
@@ -184,10 +183,10 @@ def _sound_to_image(
         output = output / file.with_suffix(".jpg").name
 
     if force and output.exists():
-        raise click.BadParameter(f"{output} already exists, use -f to overwrite")
+        raise click.UsageError(f"{output} already exists, use -f to overwrite")
 
     if (metadata_path := _find_metadata_file(file)) is None:
-        raise click.BadParameter(
+        raise click.UsageError(
             f"no metadata file for {file}, make sure it is in the same directory and has the same prefix"
         )
 
@@ -221,7 +220,7 @@ def _list_transforms(ctx, _, value) -> None:
     "transform",
     help="Convert images to sound and vice versa.",
 )
-@click.argument("files", type=click.Path(exists=True), nargs=-1)
+@click.argument("files", type=click.Path(exists=True, path_type=Path), nargs=-1)
 @add_options(transform_options)
 @click.option(
     "--list",
@@ -234,7 +233,7 @@ def _list_transforms(ctx, _, value) -> None:
 @click.option(
     "-o",
     "--output",
-    type=click.Path(file_okay=True, dir_okay=True, writable=True),
+    type=click.Path(file_okay=True, dir_okay=True, writable=True, path_type=Path),
     help="Output file name.",
     default=None,
 )
@@ -282,7 +281,7 @@ def transform_command(
                 )
             )
         else:
-            raise click.BadParameter(
+            raise click.UsageError(
                 f"{file}: unknown file type, expected image or sound"
             )
 

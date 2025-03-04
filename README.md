@@ -9,7 +9,7 @@ You need to have [uv](https://github.com/astral-sh/uv) installed.
 ```bash
 git clone https://github.com/meownoid/bender.git
 cd bender
-uv tool install .
+uv tool install --reinstall  .
 ```
 
 ## Usage

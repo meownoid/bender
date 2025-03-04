@@ -1,5 +1,6 @@
 import base64
 import io
+
 import numpy as np
 
 from bender.entity import entity
@@ -41,6 +42,8 @@ class BMPTransform(Transform):
         super().__init__()
 
         self.header_size = header_size
+        self.sample_size = sample_size
+
         try:
             self.dtype = DTYPES[sample_size]
         except LookupError:

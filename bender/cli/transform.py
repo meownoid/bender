@@ -14,6 +14,7 @@ from bender.cli.utils import (
     is_image_file,
     is_sound_file,
     parameters_to_dict,
+    SUPPORTED_EXTENSIONS,
 )
 from bender.entity import get_entities, Entity
 from bender.sound import load_sound
@@ -217,7 +218,7 @@ def _list_transforms(ctx, _, value) -> None:
 
 
 def _transform_command(
-    files: Iterable[Path],
+    file: Path,
     algorithm: str | None,
     parameters: list[tuple[str, str]] | None = None,
     quality: int = 95,
@@ -225,7 +226,7 @@ def _transform_command(
     sample_rate: int | None = None,
     output: Path | None = None,
     force: bool = False,
-) -> list[Path]:
+) -> Path:
     if parameters is None:
         parameters = []
 
@@ -234,37 +235,30 @@ def _transform_command(
     if output is None:
         output = Path.cwd()
 
-    result = []
-    for file in files:
-        if is_image_file(file):
-            result.append(
-                _image_to_sound(
-                    file,
-                    algorithm=algorithm,
-                    parameters=parameter_dict,
-                    sample_rate=sample_rate,
-                    bit_depth=bit_depth,
-                    output=output,
-                    force=force,
-                )
-            )
-        elif is_sound_file(file):
-            result.append(
-                _sound_to_image(
-                    file,
-                    algorithm=algorithm,
-                    parameters=parameter_dict,
-                    quality=quality,
-                    output=output,
-                    force=force,
-                )
-            )
-        else:
-            raise click.UsageError(
-                f"{file}: unknown file type, expected image or sound"
-            )
+    if is_image_file(file):
+        return _image_to_sound(
+            file,
+            algorithm=algorithm,
+            parameters=parameter_dict,
+            sample_rate=sample_rate,
+            bit_depth=bit_depth,
+            output=output,
+            force=force,
+        )
 
-    return result
+    if is_sound_file(file):
+        return _sound_to_image(
+            file,
+            algorithm=algorithm,
+            parameters=parameter_dict,
+            quality=quality,
+            output=output,
+            force=force,
+        )
+
+    raise click.UsageError(
+        f"{file}: unknown file type, expected one of {', '.join(SUPPORTED_EXTENSIONS)}"
+    )
 
 
 @click.command(
@@ -288,5 +282,6 @@ def _transform_command(
     help="Output file name.",
     default=None,
 )
-def transform_command(*args, **kwargs) -> list[Path]:
-    return _transform_command(*args, **kwargs)
+def transform_command(files: Iterable[Path], *args, **kwargs) -> None:
+    for file in files:
+        _transform_command(file, *args, **kwargs)

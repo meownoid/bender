@@ -4,8 +4,6 @@ from typing import Callable, Any
 
 import click
 from watchdog.events import (
-    DirCreatedEvent,
-    FileCreatedEvent,
     DirModifiedEvent,
     FileModifiedEvent,
     PatternMatchingEventHandler,
@@ -13,7 +11,7 @@ from watchdog.events import (
 from watchdog.observers import Observer
 
 from bender.cli.transform import transform_options, _transform_command
-from bender.cli.utils import add_options
+from bender.cli.utils import add_options, is_image_file, is_sound_file
 
 
 class WatchdogEventHandler(PatternMatchingEventHandler):
@@ -23,14 +21,11 @@ class WatchdogEventHandler(PatternMatchingEventHandler):
         )
         self.callback = callback
 
-    def on_created(self, event: DirCreatedEvent | FileCreatedEvent) -> None:
-        if not isinstance(event, FileCreatedEvent):
-            return
-
-        self.callback(event.src_path)
-
     def on_modified(self, event: DirModifiedEvent | FileModifiedEvent) -> None:
         if not isinstance(event, FileModifiedEvent):
+            return
+
+        if not is_image_file(event.src_path) and not is_sound_file(event.src_path):
             return
 
         self.callback(event.src_path)
@@ -62,17 +57,30 @@ def monitor_command(
     auto_open: bool = False,
     **kwargs: Any,
 ) -> None:
+    already_processed = set()
+
     def callback(path: str) -> None:
+        nonlocal already_processed
+
+        # avoid recursive processing
+        if path in already_processed:
+            return
+
         click.echo(f"Transforming {path}")
 
-        result_paths = _transform_command([Path(path)], **kwargs)
+        try:
+            result_path = _transform_command(Path(path), **kwargs)
+        except Exception as e:
+            click.echo(f"Error transforming {path}: {e}")
+            return
+
+        already_processed.add(path)
 
         if not auto_open:
             return
 
-        for result_path in result_paths:
-            click.echo(f"Opening {result_path}")
-            click.launch(str(result_path.absolute()), wait=False, locate=False)
+        click.echo(f"Opening {result_path}")
+        click.launch(str(result_path.absolute()), wait=False, locate=False)
 
     event_handler = WatchdogEventHandler(patterns=patterns, callback=callback)
     observer = Observer()

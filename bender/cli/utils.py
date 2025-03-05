@@ -3,6 +3,21 @@ from typing import Any
 
 import click
 
+IMAGE_EXTENSIONS = [
+    ".bmp",
+    ".gif",
+    ".jpg",
+    ".jpeg",
+    ".png",
+    ".tif",
+    ".tiff",
+    ".webp",
+]
+
+SOUND_EXTENSIONS = [".wav", ".aiff"]
+
+SUPPORTED_EXTENSIONS = IMAGE_EXTENSIONS + SOUND_EXTENSIONS
+
 
 class MappedChoice(click.Choice):
     def __init__(self, mapping: dict[str, Any], *args, **kwargs):
@@ -26,22 +41,13 @@ def add_options(options):
 def is_image_file(name: Path | str) -> bool:
     name = Path(name)
 
-    return name.suffix in [
-        ".bmp",
-        ".gif",
-        ".jpg",
-        ".jpeg",
-        ".png",
-        ".tif",
-        ".tiff",
-        ".webp",
-    ]
+    return name.suffix in IMAGE_EXTENSIONS
 
 
 def is_sound_file(name: Path | str) -> bool:
     name = Path(name)
 
-    return name.suffix in [".wav", ".aiff"]
+    return name.suffix in SOUND_EXTENSIONS
 
 
 def parameters_to_dict(parameters: list[tuple[str, str]]) -> dict[str, str]:

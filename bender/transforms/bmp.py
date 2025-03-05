@@ -4,7 +4,7 @@ import io
 import numpy as np
 
 from bender.entity import entity
-from bender.parameter import IntParameter
+from bender.parameter import IntParameter, BoolParameter
 from bender.sound import Sound
 from bender.transform import TransformResult, Transform
 
@@ -35,14 +35,21 @@ DTYPES = {
             max_value=4,
             clamp=False,
         ),
+        "average": BoolParameter(
+            description="Average channels during decoding, otherwise use only left channel",
+            default=False,
+        ),
     },
 )
 class BMPTransform(Transform):
-    def __init__(self, header_size: int = 54, sample_size: int = 1) -> None:
+    def __init__(
+        self, header_size: int = 54, sample_size: int = 1, average: bool = False
+    ) -> None:
         super().__init__()
 
         self.header_size = header_size
         self.sample_size = sample_size
+        self.average = average
 
         try:
             self.dtype = DTYPES[sample_size]
@@ -71,13 +78,18 @@ class BMPTransform(Transform):
             sound=Sound(left=mono, right=mono, sample_rate=48000), metadata=metadata
         )
 
-    def decode(self, image_sound: TransformResult) -> Image:
+    def decode(self, transform_result: TransformResult) -> Image:
         header = np.frombuffer(
-            base64.b64decode(image_sound.metadata["header"].encode("utf-8")),
+            base64.b64decode(transform_result.metadata["header"].encode("utf-8")),
             dtype=np.uint8,
         ).copy()
 
-        mono = image_sound.sound.left
+        # get mono signal
+        if self.average:
+            mono = (transform_result.sound.left + transform_result.sound.right) / 2.0
+        else:
+            mono = transform_result.sound.left
+
         # scale to [0, 1]
         mono = (mono + 1.0) / 2.0
         # convert to raw BMP dwords

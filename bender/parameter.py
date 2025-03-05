@@ -45,6 +45,11 @@ class StringParameter(Parameter[str]):
         return text
 
 
+class BoolParameter(Parameter[bool]):
+    def parse(self, text: str) -> bool:
+        return text.lower() in ("true", "yes", "y", "1")
+
+
 class IntParameter(Parameter[int]):
     def __init__(
         self,

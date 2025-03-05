@@ -57,24 +57,26 @@ def monitor_command(
     auto_open: bool = False,
     **kwargs: Any,
 ) -> None:
-    already_processed = set()
+    processing_results = set()
 
-    def callback(path: str) -> None:
-        nonlocal already_processed
+    def callback(path_str: str) -> None:
+        nonlocal processing_results
+
+        path = Path(path_str)
 
         # avoid recursive processing
-        if path in already_processed:
+        if path in processing_results:
             return
 
         click.echo(f"Transforming {path}")
 
         try:
-            result_path = _transform_command(Path(path), **kwargs)
+            result_path = _transform_command(path, **kwargs)
         except Exception as e:
             click.echo(f"Error transforming {path}: {e}")
             return
 
-        already_processed.add(path)
+        processing_results.add(result_path)
 
         if not auto_open:
             return

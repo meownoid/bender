@@ -12,6 +12,13 @@ cd bender
 uv tool install --reinstall  .
 ```
 
+(Optional) To enable autocompletion, generate completion script and source it from your shell configuration.
+If you are using bash, replace `zsh` with `bash`.
+
+```bash
+_BENDER_COMPLETE=zsh_source bender > ~/.zshrc.d/bender-complete.zsh
+```
+
 ## Usage
 
 ### Transforming images to sound and back

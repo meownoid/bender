@@ -2,6 +2,7 @@ import itertools
 
 import numpy as np
 
+from bender.transforms.utils import pad_reshape
 from bender.entity import entity
 from bender.parameter import IntParameter, BoolParameter
 from bender.sound import Sound
@@ -37,20 +38,22 @@ class ArrayTransform(Transform):
         self.order = order
         self.average = average
 
+    def _get_axes(self) -> tuple[int, ...]:
+        return self._axes_permutations[self.order % len(self._axes_permutations)]
+
     def encode(self, image: Image) -> TransformResult:
         # scale to [-1, 1]
-        array = np.array(image).astype(np.float32) / 255.0
-        array = array * 2.0 - 1.0
+        arr = np.array(image).astype(np.float32) / 255.0
+        arr = arr * 2.0 - 1.0
 
         # permute axes
-        axes = self._axes_permutations[self.order % len(self._axes_permutations)]
-        array = array.transpose(axes)
+        arr = arr.transpose(self._get_axes())
 
         # save original shape
-        metadata = {"shape": array.shape}
+        metadata = {"shape": arr.shape}
 
         # flatten
-        mono = array.reshape(-1)
+        mono = arr.reshape(-1)
 
         return TransformResult(
             sound=Sound(left=mono, right=mono, sample_rate=48000), metadata=metadata
@@ -66,14 +69,13 @@ class ArrayTransform(Transform):
             mono = transform_result.sound.left
 
         # reshape
-        array = mono.reshape(shape)
+        arr = pad_reshape(mono, shape)
 
         # permute axes back
-        axes = self._axes_permutations[self.order % len(self._axes_permutations)]
-        array = array.transpose(np.argsort(axes))
+        arr = arr.transpose(np.argsort(self._get_axes()))
 
         # scale back to [0, 255]
-        array = (array + 1.0) / 2.0
-        array = (array * 255.0).astype(np.uint8)
+        arr = (arr + 1.0) / 2.0
+        arr = (arr * 255.0).astype(np.uint8)
 
-        return Image.fromarray(array)
+        return Image.fromarray(arr)

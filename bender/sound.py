@@ -8,8 +8,8 @@ import soundfile
 
 @dataclass(frozen=True)
 class Sound:
-    left: np.array
-    right: np.array
+    left: np.ndarray
+    right: np.ndarray
     sample_rate: int
 
     def __post_init__(self):

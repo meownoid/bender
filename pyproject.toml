@@ -15,3 +15,6 @@ dependencies = [
 
 [project.scripts]
 bender = "bender:__main__.main"
+
+[tool.mypy]
+plugins = "numpy.typing.mypy_plugin"

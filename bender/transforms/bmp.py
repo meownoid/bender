@@ -13,11 +13,11 @@ from PIL import Image, ImageFile
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 
-DTYPES = {
-    1: np.uint8,
-    2: np.uint16,
-    3: np.uint32,
-    4: np.uint64,
+DTYPES: dict[int, np.dtype] = {
+    1: np.dtype(np.uint8),
+    2: np.dtype(np.uint16),
+    3: np.dtype(np.uint32),
+    4: np.dtype(np.uint64),
 }
 
 

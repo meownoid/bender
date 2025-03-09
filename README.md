@@ -1,6 +1,6 @@
 # bender
 
-Data bending toolkit. Transforms images to sound and back.
+Data bending tool. Transforms images to sound and back.
 
 ## Installation
 
@@ -54,7 +54,7 @@ bender transform --list
 To use specific algorithm and parameters:
 
 ```bash
-bender transform image.jpg -a bmp -p sample_size=16
+bender transform -a bmp -p sample_size 1 image.jpg
 ```
 
 ### Monitor processed sound files
@@ -62,14 +62,14 @@ bender transform image.jpg -a bmp -p sample_size=16
 To automatically monitor and process sound files matching given patterns:
 
 ```bash
-bender monitor 'image1-*.wav' 'image2-*.wav'
+bender monitor 'image1-*.wav'
 ```
 
 As soon as new sound file with prefix `image1-` or `image2-` appears in the directory, it will be transformed back to image.
 Notice the use of quotes to prevent shell from expanding the pattern.
 
-To monitor all sound files in the directory:
+To monitor all sound files in the directory and open resulting images after transformation:
 
 ```bash
-bender monitor '*.wav'
+bender monitor -o '*.wav'
 ```

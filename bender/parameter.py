@@ -7,7 +7,7 @@ class Parameter[T]:
     def __init__(
         self,
         *,
-        description: str | None,
+        description: str | None = None,
         default: T | None = None,
         required: bool = False,
     ):

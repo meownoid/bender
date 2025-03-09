@@ -1,6 +1,7 @@
 import functools
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Callable
 
 import librosa
 import numpy as np
@@ -22,6 +23,13 @@ class Sound:
         assert self.sample_rate > 0, "Sample rate must be positive"
 
     def resample(self, sample_rate: int) -> "Sound":
+        """
+        Resample both channels to the given sample rate. If the sample rate
+        is the same as the current sample rate, return the original Sound object.
+
+        :param sample_rate: new sample rate
+        :return: new Sound object with the resampled channels
+        """
         assert sample_rate > 0, "Sample rate must be positive"
 
         if sample_rate == self.sample_rate:
@@ -37,6 +45,15 @@ class Sound:
         )
 
         return Sound(resample(self.left), resample(self.right), sample_rate)
+
+    def process(self, fn: Callable[[np.ndarray], np.ndarray]) -> "Sound":
+        """
+        Apply a function to both channels.
+
+        :param fn: function to apply to both channels
+        :return: new Sound object with the processed channels
+        """
+        return Sound(fn(self.left), fn(self.right), self.sample_rate)
 
     def save(self, path: str | Path, bit_depth: int = 16):
         match bit_depth:

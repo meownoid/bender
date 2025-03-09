@@ -1,6 +1,6 @@
 # bender
 
-Data bending toolkit. Transforms images to sound and back. Applies various DSP effects.
+Data bending toolkit. Transforms images to sound and back.
 
 ## Installation
 
@@ -21,7 +21,7 @@ _BENDER_COMPLETE=zsh_source bender > ~/.zshrc.d/bender-complete.zsh
 
 ## Usage
 
-### Transforming images to sound and back
+### Transform images to sound and back
 
 Transform image to sound:
 
@@ -72,38 +72,4 @@ To monitor all sound files in the directory:
 
 ```bash
 bender monitor '*.wav'
-```
-
-### Process sound files
-
-To process sound file:
-
-```bash
-bender process -a gain -p gain=1.5 sound.wav
-```
-
-To list all available algorithms and their parameters:
-
-```bash
-bender process --list
-```
-
-Some algorithms require several inputs:
-
-```bash
-bender process -a mix -p gain-1=0.3 -p gain-2=0.7  source-1.wav source-2.wav
-```
-
-### Edit images
-
-To edit image:
-
- ```bash
- bender edit -a fragments -p n=100 image.jpg
- ```
-
-To list all available algorithms and their parameters:
-
-```bash
-bender edit --list
 ```

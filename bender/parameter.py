@@ -1,5 +1,7 @@
 from typing import Any
 
+from bender.utils import Ordered
+
 
 class Parameter[T]:
     def __init__(
@@ -50,12 +52,12 @@ class BoolParameter(Parameter[bool]):
         return text.lower() in ("true", "yes", "y", "1")
 
 
-class IntParameter(Parameter[int]):
+class MinMaxParameter[T: Ordered](Parameter[T]):
     def __init__(
         self,
         *,
-        min_value: int | None = None,
-        max_value: int | None = None,
+        min_value: T | None = None,
+        max_value: T | None = None,
         clamp: bool = False,
         **kwargs: Any,
     ):
@@ -77,8 +79,13 @@ class IntParameter(Parameter[int]):
 
         return f"{usage} ({', '.join(additional)})"
 
-    def parse(self, text: str) -> int:
-        value = int(text)
+    def _parse(self, text: str) -> T:
+        raise NotImplementedError(
+            f"_parse is not implemented in {self.__class__.__name__}"
+        )
+
+    def parse(self, text: str) -> T:
+        value = self._parse(text)
 
         if self.min_value is not None and value < self.min_value:
             if self.clamp:
@@ -95,6 +102,16 @@ class IntParameter(Parameter[int]):
                 )
 
         return value
+
+
+class IntParameter(MinMaxParameter[int]):
+    def _parse(self, text: str) -> int:
+        return int(text)
+
+
+class FloatParameter(MinMaxParameter[float]):
+    def _parse(self, text: str) -> float:
+        return float(text)
 
 
 def build_parameters(

@@ -10,7 +10,7 @@ from watchdog.events import (
 )
 from watchdog.observers import Observer
 
-from bender.cli.transform import transform_options, _transform_command
+from bender.cli.transform import transform_shared_options, _transform_command
 from bender.cli.utils import add_options, is_image_file, is_sound_file
 
 
@@ -35,7 +35,7 @@ class WatchdogEventHandler(PatternMatchingEventHandler):
     "monitor", help="Automatically transform sound files with a given pattern."
 )
 @click.argument("patterns", nargs=-1)
-@add_options(transform_options)
+@add_options(transform_shared_options)
 @click.option(
     "-r",
     "--recursive",

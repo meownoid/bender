@@ -59,3 +59,10 @@ def parameters_to_dict(parameters: list[tuple[str, str]]) -> dict[str, str]:
         result[key] = value
 
     return result
+
+
+def format_parameters(parameters: dict[str, str]) -> str:
+    if not parameters:
+        return "default parameters"
+
+    return ", ".join(f"{key}={value}" for key, value in parameters.items())

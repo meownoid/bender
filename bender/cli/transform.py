@@ -15,6 +15,7 @@ from bender.cli.utils import (
     is_sound_file,
     parameters_to_dict,
     SUPPORTED_EXTENSIONS,
+    format_parameters,
 )
 from bender.entity import get_entities, Entity
 from bender.sound import load_sound
@@ -23,7 +24,8 @@ from bender.transform import Transform, TransformResult
 DEFAULT_ALGORITHM = "bmp"
 
 
-transform_options = [
+# options shared with monitor command
+transform_shared_options = [
     click.option(
         "-a",
         "--algorithm",
@@ -45,13 +47,6 @@ transform_options = [
         type=click.IntRange(0, 100, clamp=True),
         default=95,
         help="Output image quality.",
-    ),
-    click.option(
-        "-s",
-        "--sample-rate",
-        type=click.IntRange(11025, 384000, clamp=True),
-        default=None,
-        help="Output sound file sample rate.",
     ),
     click.option(
         "-b",
@@ -124,7 +119,6 @@ def _image_to_sound(
     file: Path,
     algorithm: str | None,
     parameters: dict[str, str],
-    sample_rate: int | None,
     bit_depth: int,
     output: Path,
     force: bool,
@@ -166,7 +160,8 @@ def _image_to_sound(
                 f"{metadata_path} already exists, use -f to overwrite"
             )
 
-    result.sound.save(sound_path, sample_rate=sample_rate, bit_depth=bit_depth)
+    click.echo(f"Saving {sound_path}")
+    result.sound.save(sound_path, bit_depth=bit_depth)
     metadata_path.write_text(dumped_metadata)
 
     return sound_path
@@ -183,7 +178,7 @@ def _sound_to_image(
     if output.is_dir():
         output = output / file.with_suffix(".jpg").name
 
-    if force and output.exists():
+    if not force and output.exists():
         raise click.UsageError(f"{output} already exists, use -f to overwrite")
 
     if (metadata_path := _find_metadata_file(file)) is None:
@@ -202,6 +197,7 @@ def _sound_to_image(
     transform = _build_transform(algorithm, parameters)
     image = transform.decode(TransformResult(sound, metadata["metadata"]))
 
+    click.echo(f"Saving {output}")
     image.save(output, quality=quality)
 
     return output
@@ -223,7 +219,6 @@ def _transform_command(
     parameters: list[tuple[str, str]] | None = None,
     quality: int = 95,
     bit_depth: int = 24,
-    sample_rate: int | None = None,
     output: Path | None = None,
     force: bool = False,
 ) -> Path:
@@ -235,12 +230,15 @@ def _transform_command(
     if output is None:
         output = Path.cwd()
 
+    click.echo(
+        f"Transforming {file} using {algorithm} ({format_parameters(parameter_dict)})"
+    )
+
     if is_image_file(file):
         return _image_to_sound(
             file,
             algorithm=algorithm,
             parameters=parameter_dict,
-            sample_rate=sample_rate,
             bit_depth=bit_depth,
             output=output,
             force=force,
@@ -266,7 +264,7 @@ def _transform_command(
     help="Convert images to sound and vice versa.",
 )
 @click.argument("files", type=click.Path(exists=True, path_type=Path), nargs=-1)
-@add_options(transform_options)
+@add_options(transform_shared_options)
 @click.option(
     "--list",
     is_flag=True,
@@ -282,6 +280,11 @@ def _transform_command(
     help="Output file name.",
     default=None,
 )
-def transform_command(files: Iterable[Path], *args, **kwargs) -> None:
+@click.option(
+    "-t", "--twice", is_flag=True, default=False, help="Do the transformation twice."
+)
+def transform_command(files: Iterable[Path], twice: bool = False, **kwargs) -> None:
     for file in files:
-        _transform_command(file, *args, **kwargs)
+        output_path = _transform_command(file, **kwargs)
+        if twice:
+            _transform_command(output_path, **kwargs)

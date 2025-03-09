@@ -26,20 +26,20 @@ ImageFile.LOAD_TRUNCATED_IMAGES = True
     parameters={
         "carrier_frequency": IntParameter(
             description="Frequency of the carrier wave",
-            default=7800,
+            default=1300,
             min_value=10,
             clamp=False,
         ),
         "sample_rate": IntParameter(
             description="Sample rate of the encoding process",
-            default=48000,
+            default=7800,
             min_value=10,
             clamp=False,
         ),
     },
 )
 class QAMTransform(Transform):
-    def __init__(self, carrier_frequency: int = 7800, sample_rate: int = 48000) -> None:
+    def __init__(self, carrier_frequency: int = 1300, sample_rate: int = 7800) -> None:
         super().__init__()
 
         self.carrier_frequency = carrier_frequency
@@ -49,7 +49,7 @@ class QAMTransform(Transform):
         arr = np.array(image)
 
         metadata = {
-            "shape": arr.shape,
+            "shape": arr.shape[:2],
         }
 
         arr = arr / 255.0

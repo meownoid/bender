@@ -3,7 +3,7 @@ from scipy.signal import butter, sosfilt
 
 
 def pad_reshape(data: np.ndarray, shape: tuple[int, ...]) -> np.ndarray:
-    assert len(data.shape) == 1, "data must be 1D"
+    assert data.ndim == 1, "data must be 1D"
     assert len(shape) > 0, "shape must be non-empty"
 
     total_pixels = np.prod(shape).item()
@@ -24,116 +24,104 @@ def lowpass(
     return sosfilt(sos, data)
 
 
-def _get_carriers(n, carrier_freq, sr):
+def _get_carriers(n: int, cf: float, sr: float) -> tuple[np.ndarray, np.ndarray]:
     t = np.linspace(0, n / sr, n)
-    c1 = np.cos(2 * np.pi * carrier_freq * t)
-    c2 = np.sin(2 * np.pi * carrier_freq * t)
+
+    c1 = np.cos(2 * np.pi * cf * t)
+    c2 = np.sin(2 * np.pi * cf * t)
+
     return c1, c2
 
 
-def quam_encode(
-    m1: np.ndarray, m2: np.ndarray, carrier_freq: float = 1000, sr: float = 48000
-) -> np.ndarray:
+def qam_encode(m1: np.ndarray, m2: np.ndarray, cf: float, sr: float) -> np.ndarray:
     """
     Encode two messages into a single signal using Quadrature Amplitude Modulation (QAM).
 
     :param m1: First message
     :param m2: Second message
-    :param carrier_freq: Carrier frequency
+    :param cf: Carrier frequency
     :param sr: Sampling rate
     :return: Encoded signal
     """
-    assert m1.shape == m2.shape, "messages must have the same shape"
-    assert len(m1.shape) == 1, "messages must be 1D"
-    assert carrier_freq > 0, "carrier frequency must be positive"
+    assert m1.ndim == 1 and m2.ndim == 1, "messages must be 1D"
+    assert len(m1) == len(m2), "messages must have the same length"
+    assert cf > 0, "carrier frequency must be positive"
     assert sr > 0, "sampling rate must be positive"
-    assert carrier_freq < sr / 2, (
-        "carrier frequency must be less than half the sampling rate"
-    )
+    assert cf < sr / 2, "carrier frequency must be less than half the sampling rate"
 
-    c1, c2 = _get_carriers(m1.shape[0], carrier_freq, sr)
+    c1, c2 = _get_carriers(len(m1), cf, sr)
 
     return m1 * c1 + m2 * c2
 
 
 def qam_decode(
     signal: np.ndarray,
-    carrier_freq: float = 1000,
-    sr: float = 48000,
-    offset: float = 1.5,
+    cf: float,
+    sr: float,
+    offset: float = 0.5,
 ) -> tuple[np.ndarray, np.ndarray]:
     """
     Decode a signal into two messages using Quadrature Amplitude Modulation (QAM).
 
     :param signal: Encoded signal
-    :param carrier_freq: Carrier frequency
+    :param cf: Carrier frequency
     :param sr: Sampling rate
-    :param offset: Offset for the lowpass filter
+    :param offset: Relative frequency offset for the lowpass filter
     :return: Decoded messages (m1, m2)
     """
-    assert len(signal.shape) == 1
-    assert carrier_freq > 0, "carrier frequency must be positive"
+    assert signal.ndim == 1
+    assert cf > 0, "carrier frequency must be positive"
     assert sr > 0, "sampling rate must be positive"
-    assert carrier_freq < sr / 2, (
-        "carrier frequency must be less than half the sampling rate"
-    )
-    assert offset >= 1, "offset must be greater or equal than 1"
+    assert cf < sr / 2, "carrier frequency must be less than half the sampling rate"
 
-    c1, c2 = _get_carriers(signal.shape[0], carrier_freq, sr)
+    c1, c2 = _get_carriers(signal.shape[0], cf, sr)
 
-    m1 = lowpass(signal * c1, carrier_freq * offset, sr, 6) * 2.0
-    m2 = lowpass(signal * c2, carrier_freq * offset, sr, 6) * 2.0
+    m1 = lowpass(signal * c1, cf * (1.0 + offset), sr, 6) * 2.0
+    m2 = lowpass(signal * c2, cf * (1.0 + offset), sr, 6) * 2.0
 
     return m1, m2
 
 
-def am_encode(
-    message: np.ndarray, carrier_freq: float = 1000, sr: float = 48000
-) -> np.ndarray:
+def am_encode(message: np.ndarray, cf: float, sr: float) -> np.ndarray:
     """
     Encode a message using Amplitude Modulation (AM).
 
     :param message: Message to encode
-    :param carrier_freq: Carrier frequency
+    :param cf: Carrier frequency
     :param sr: Sampling rate
     :return: Encoded signal (AM modulated)
     """
-    assert len(message.shape) == 1, "message must be 1D"
-    assert carrier_freq > 0, "carrier frequency must be positive"
+    assert message.ndim == 1, "message must be 1D"
+    assert cf > 0, "carrier frequency must be positive"
     assert sr > 0, "sampling rate must be positive"
-    assert carrier_freq < sr / 2, (
-        "carrier frequency must be less than half the sampling rate"
-    )
+    assert cf < sr / 2, "carrier frequency must be less than half the sampling rate"
 
-    carrier, _ = _get_carriers(message.shape[0], carrier_freq, sr)
-    return message * carrier
+    c, _ = _get_carriers(len(message), cf, sr)
+    return message * c
 
 
 def am_decode(
     signal: np.ndarray,
-    carrier_freq: float = 1000,
-    sr: float = 48000,
-    offset: float = 1.5,
+    cf: float,
+    sr: float,
+    offset: float = 0.5,
 ) -> np.ndarray:
     """
     Decode a message using Amplitude Modulation (AM).
 
     :param signal: Signal to decode
-    :param carrier_freq: Carrier frequency
+    :param cf: Carrier frequency
     :param sr: Sampling rate
-    :param offset: Offset for the lowpass filter
+    :param offset: Relative frequency offset for the lowpass filter
     :return: Decoded message (AM demodulated)
     """
-    assert len(signal.shape) == 1, "message must be 1D"
-    assert carrier_freq > 0, "carrier frequency must be positive"
+    assert signal.ndim == 1, "message must be 1D"
+    assert cf > 0, "carrier frequency must be positive"
     assert sr > 0, "sampling rate must be positive"
-    assert carrier_freq < sr / 2, (
-        "carrier frequency must be less than half the sampling rate"
-    )
-    assert offset >= 1, "offset must be greater or equal than 1"
+    assert cf < sr / 2, "carrier frequency must be less than half the sampling rate"
 
-    carrier, _ = _get_carriers(signal.shape[0], carrier_freq, sr)
-    return lowpass(signal * carrier, carrier_freq * offset, sr, 6) * 2.0
+    c, _ = _get_carriers(len(signal), cf, sr)
+    return lowpass(signal * c, cf * (1.0 + offset), sr, 6) * 2.0
 
 
 def rgb_to_ycbcr(

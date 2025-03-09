@@ -1,7 +1,7 @@
 import numpy as np
 
 from bender.transforms.utils import (
-    quam_encode,
+    qam_encode,
     am_encode,
     rgb_to_ycbcr,
     am_decode,
@@ -61,7 +61,10 @@ class QAMTransform(Transform):
         y, c_b, c_r = rgb_to_ycbcr(r, g, b)
 
         left = am_encode(y, self.carrier_frequency, self.sample_rate)
-        right = quam_encode(c_b, c_r, self.carrier_frequency, self.sample_rate)
+        right = qam_encode(c_b, c_r, self.carrier_frequency, self.sample_rate)
+
+        # Bring left channel down to be closer to right channel
+        left /= 2.0
 
         return TransformResult(
             sound=Sound(left=left, right=right, sample_rate=self.sample_rate),
@@ -71,7 +74,7 @@ class QAMTransform(Transform):
     def decode(self, transform_result: TransformResult) -> Image:
         sound = transform_result.sound.resample(self.sample_rate)
 
-        y = am_decode(sound.left, self.carrier_frequency, self.sample_rate)
+        y = am_decode(sound.left * 2.0, self.carrier_frequency, self.sample_rate)
         c_b, c_r = qam_decode(sound.right, self.carrier_frequency, self.sample_rate)
 
         r, g, b = ycbcr_to_rgb(y, c_b, c_r)

@@ -16,8 +16,8 @@ class Sound:
     def __post_init__(self):
         assert self.left.ndim == 1, "Left channel must be 1D"
         assert self.right.ndim == 1, "Right channel must be 1D"
-        assert self.left.shape == self.right.shape, (
-            "Left and right channels must have the same shape"
+        assert len(self.left) == len(self.right), (
+            "Left and right channels must have the same length"
         )
         assert self.sample_rate > 0, "Sample rate must be positive"
 

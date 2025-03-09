@@ -1,4 +1,3 @@
-import librosa
 import numpy as np
 
 from bender.transforms.utils import (
@@ -42,6 +41,11 @@ class QAMTransform(Transform):
     def __init__(self, carrier_frequency: int = 1300, sample_rate: int = 7800) -> None:
         super().__init__()
 
+        if carrier_frequency >= sample_rate / 2:
+            raise ValueError(
+                "Carrier frequency must be less than half of the sample rate"
+            )
+
         self.carrier_frequency = carrier_frequency
         self.sample_rate = sample_rate
 
@@ -59,23 +63,16 @@ class QAMTransform(Transform):
         left = am_encode(y, self.carrier_frequency, self.sample_rate)
         right = quam_encode(c_b, c_r, self.carrier_frequency, self.sample_rate)
 
-        if self.sample_rate != 48000:
-            left = librosa.resample(left, orig_sr=self.sample_rate, target_sr=48000)
-            right = librosa.resample(right, orig_sr=self.sample_rate, target_sr=48000)
-
         return TransformResult(
-            sound=Sound(left=left, right=right, sample_rate=48000), metadata=metadata
+            sound=Sound(left=left, right=right, sample_rate=self.sample_rate),
+            metadata=metadata,
         )
 
     def decode(self, transform_result: TransformResult) -> Image:
-        left, right = transform_result.sound.left, transform_result.sound.right
+        sound = transform_result.sound.resample(self.sample_rate)
 
-        if self.sample_rate != 48000:
-            left = librosa.resample(left, orig_sr=48000, target_sr=self.sample_rate)
-            right = librosa.resample(right, orig_sr=48000, target_sr=self.sample_rate)
-
-        y = am_decode(left, self.carrier_frequency, self.sample_rate)
-        c_b, c_r = qam_decode(right, self.carrier_frequency, self.sample_rate)
+        y = am_decode(sound.left, self.carrier_frequency, self.sample_rate)
+        c_b, c_r = qam_decode(sound.right, self.carrier_frequency, self.sample_rate)
 
         r, g, b = ycbcr_to_rgb(y, c_b, c_r)
 

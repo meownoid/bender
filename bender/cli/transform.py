@@ -160,7 +160,7 @@ def _image_to_sound(
             )
 
     click.echo(f"Saving {sound_path}")
-    result.sound.save(sound_path, bit_depth=bit_depth)
+    result.sound.resample(48000).save(sound_path, bit_depth=bit_depth)
 
     click.echo(f"Saving {metadata_path}")
     metadata_path.write_text(dumped_metadata)
@@ -282,10 +282,13 @@ def _transform_command(
     default=None,
 )
 @click.option(
-    "-t", "--twice", is_flag=True, default=False, help="Do the transformation twice."
+    "-n",
+    "--n-times",
+    type=int,
+    default=1,
+    help="Number of times to apply the transform.",
 )
-def transform_command(files: Iterable[Path], twice: bool = False, **kwargs) -> None:
+def transform_command(files: Iterable[Path], n_times: bool = False, **kwargs) -> None:
     for file in files:
-        output_path = _transform_command(file, **kwargs)
-        if twice:
-            _transform_command(output_path, **kwargs)
+        for _ in range(n_times):
+            file = _transform_command(file, **kwargs)

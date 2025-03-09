@@ -1,3 +1,4 @@
+import functools
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -20,14 +21,24 @@ class Sound:
         )
         assert self.sample_rate > 0, "Sample rate must be positive"
 
-    def save(
-        self, path: str | Path, sample_rate: int | None = None, bit_depth: int = 16
-    ):
-        assert sample_rate is None or sample_rate > 0, "Sample rate must be positive"
+    def resample(self, sample_rate: int) -> "Sound":
+        assert sample_rate > 0, "Sample rate must be positive"
 
-        if sample_rate is None:
-            sample_rate = self.sample_rate
+        if sample_rate == self.sample_rate:
+            return self
 
+        resample = functools.partial(
+            librosa.resample,
+            orig_sr=self.sample_rate,
+            target_sr=sample_rate,
+            fix=False,
+            scale=False,
+            res_type="soxr_vhq",
+        )
+
+        return Sound(resample(self.left), resample(self.right), sample_rate)
+
+    def save(self, path: str | Path, bit_depth: int = 16):
         match bit_depth:
             case 8:
                 subtype = "PCM_S8"
@@ -43,7 +54,10 @@ class Sound:
                 )
 
         soundfile.write(
-            path, np.vstack([self.left, self.right]).T, sample_rate, subtype=subtype
+            path,
+            np.vstack([self.left, self.right]).T,
+            self.sample_rate,
+            subtype=subtype,
         )
 
 

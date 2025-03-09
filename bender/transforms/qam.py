@@ -64,7 +64,7 @@ class QAMTransform(Transform):
             right = librosa.resample(right, orig_sr=self.sample_rate, target_sr=48000)
 
         return TransformResult(
-            sound=Sound(left=left, right=right, sample_rate=4800), metadata=metadata
+            sound=Sound(left=left, right=right, sample_rate=48000), metadata=metadata
         )
 
     def decode(self, transform_result: TransformResult) -> Image:

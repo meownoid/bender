@@ -1,5 +1,5 @@
 import numpy as np
-from scipy.signal import butter, sosfilt
+from scipy.signal import butter, sosfiltfilt
 
 
 def pad_reshape(data: np.ndarray, shape: tuple[int, ...]) -> np.ndarray:
@@ -21,7 +21,7 @@ def lowpass(
 ) -> np.ndarray:
     normal_cutoff = 2 * cutoff / sampling_rate
     sos = butter(order, normal_cutoff, btype="low", output="sos", analog=False)
-    return sosfilt(sos, data)
+    return sosfiltfilt(sos, data)
 
 
 def _get_carriers(n: int, cf: float, sr: float) -> tuple[np.ndarray, np.ndarray]:

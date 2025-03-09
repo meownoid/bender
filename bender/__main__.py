@@ -6,7 +6,6 @@ from bender.cli.transform import transform_command
 
 @click.group()
 def main():
-    """My CLI Application"""
     pass
 
 

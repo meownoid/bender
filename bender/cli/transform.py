@@ -15,7 +15,6 @@ from bender.cli.utils import (
     is_sound_file,
     parameters_to_dict,
     SUPPORTED_EXTENSIONS,
-    format_parameters,
 )
 from bender.entity import get_entities, Entity
 from bender.sound import load_sound
@@ -162,6 +161,8 @@ def _image_to_sound(
 
     click.echo(f"Saving {sound_path}")
     result.sound.save(sound_path, bit_depth=bit_depth)
+
+    click.echo(f"Saving {metadata_path}")
     metadata_path.write_text(dumped_metadata)
 
     return sound_path
@@ -185,6 +186,8 @@ def _sound_to_image(
         raise click.UsageError(
             f"no metadata file for {file}, make sure it is in the same directory and has the same prefix"
         )
+
+    click.echo(f"Found metadata at {metadata_path}")
 
     sound = load_sound(file)
     metadata = json.loads(metadata_path.read_text())
@@ -230,9 +233,7 @@ def _transform_command(
     if output is None:
         output = Path.cwd()
 
-    click.echo(
-        f"Transforming {file} using {algorithm} ({format_parameters(parameter_dict)})"
-    )
+    click.echo(f"Transforming {file}")
 
     if is_image_file(file):
         return _image_to_sound(

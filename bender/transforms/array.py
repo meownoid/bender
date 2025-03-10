@@ -21,11 +21,9 @@ ImageFile.LOAD_TRUNCATED_IMAGES = True
             description="Ordering of axes of the image tensor",
             default=0,
             min_value=0,
-            clamp=False,
         ),
         "average": BoolParameter(
             description="Average channels during decoding, otherwise use only left channel",
-            default=False,
         ),
     },
 )

@@ -26,18 +26,16 @@ DTYPES: dict[int, np.dtype] = {
     description="Interprets raw BMP bytes as samples",
     parameters={
         "header_size": IntParameter(
-            default=54, min_value=0, description="Size of header in bytes to preserve"
+            description="Size of header in bytes to preserve", default=54, min_value=0
         ),
         "sample_size": IntParameter(
             description="Number of bytes per sample",
             default=1,
             min_value=1,
             max_value=4,
-            clamp=False,
         ),
         "average": BoolParameter(
             description="Average channels during decoding, otherwise use only left channel",
-            default=False,
         ),
     },
 )

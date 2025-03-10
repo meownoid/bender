@@ -26,14 +26,12 @@ ImageFile.LOAD_TRUNCATED_IMAGES = True
         "carrier_frequency": IntParameter(
             description="Frequency of the carrier wave",
             default=1300,
-            min_value=10,
-            clamp=False,
+            min_value=1,
         ),
         "sample_rate": IntParameter(
-            description="Sample rate of the encoding process",
+            description="Sample rate of the encoding process, must be greater than twice the carrier frequency",
             default=7800,
-            min_value=10,
-            clamp=False,
+            min_value=3,
         ),
     },
 )

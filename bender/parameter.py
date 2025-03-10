@@ -1,40 +1,27 @@
+from dataclasses import dataclass
 from typing import Any
 
 from bender.utils import Ordered
 
 
+@dataclass(frozen=True)
 class Parameter[T]:
-    def __init__(
-        self,
-        *,
-        description: str | None = None,
-        default: T | None = None,
-        required: bool = False,
-    ):
-        if description is None:
-            description = self.__class__.__name__
-
-        self._description = description
-        self._default = default
-        self._required = required
+    description: str | None = None
+    default: T | None = None
+    required: bool = False
 
     def get_usage(self) -> str:
-        usage = self._description
+        result = self.description
 
-        if self._required:
-            usage += " (required)"
-        elif self._default is not None:
-            usage += f" (default: {self._default})"
+        if result is None:
+            result = self.__class__.__name__
 
-        return usage
+        if self.required:
+            result += " [required]"
+        elif self.default is not None:
+            result += f" [default: {self.default}]"
 
-    @property
-    def default(self) -> T | None:
-        return self._default
-
-    @property
-    def required(self) -> bool:
-        return self._required
+        return result
 
     def parse(self, text: str) -> T:
         raise NotImplementedError(
@@ -42,42 +29,51 @@ class Parameter[T]:
         )
 
 
+@dataclass(frozen=True)
 class StringParameter(Parameter[str]):
+    """
+    String parameter, returns the input as is.
+    """
+
     def parse(self, text: str) -> str:
         return text
 
 
+@dataclass(frozen=True)
 class BoolParameter(Parameter[bool]):
+    """
+    Boolean parameter, accepts true/false, yes/no, 1/0.
+    """
+
+    default = False
+
     def parse(self, text: str) -> bool:
-        return text.lower() in ("true", "yes", "y", "1")
+        text = text.strip().lower()
+
+        if text in ("true", "yes", "1"):
+            return True
+        elif text in ("false", "no", "0"):
+            return False
+        else:
+            raise ValueError(f"Invalid boolean value: {text}")
 
 
+@dataclass(frozen=True)
 class MinMaxParameter[T: Ordered](Parameter[T]):
-    def __init__(
-        self,
-        *,
-        min_value: T | None = None,
-        max_value: T | None = None,
-        clamp: bool = False,
-        **kwargs: Any,
-    ):
-        super().__init__(**kwargs)
-
-        self.min_value = min_value
-        self.max_value = max_value
-        self.clamp = clamp
+    min_value: T | None = None
+    max_value: T | None = None
+    clamp: bool = False
 
     def get_usage(self) -> str:
-        usage = super().get_usage()
-        additional = []
+        result = super().get_usage()
 
         if self.min_value is not None:
-            additional.append(f"min: {self.min_value}")
+            result += f" [min: {self.min_value}]"
 
         if self.max_value is not None:
-            additional.append(f"max: {self.max_value}")
+            result += f" [max: {self.max_value}]"
 
-        return f"{usage} ({', '.join(additional)})"
+        return result
 
     def _parse(self, text: str) -> T:
         raise NotImplementedError(
@@ -104,11 +100,13 @@ class MinMaxParameter[T: Ordered](Parameter[T]):
         return value
 
 
+@dataclass(frozen=True)
 class IntParameter(MinMaxParameter[int]):
     def _parse(self, text: str) -> int:
         return int(text)
 
 
+@dataclass(frozen=True)
 class FloatParameter(MinMaxParameter[float]):
     def _parse(self, text: str) -> float:
         return float(text)

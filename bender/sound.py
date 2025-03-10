@@ -77,14 +77,14 @@ class Sound:
             subtype=subtype,
         )
 
+    @staticmethod
+    def load(path: str | Path, sample_rate: int | None = None) -> "Sound":
+        assert sample_rate is None or sample_rate >= 0, "Sample rate must be positive"
 
-def load_sound(path: str | Path, sample_rate: int | None = None) -> Sound:
-    assert sample_rate is None or sample_rate >= 0, "Sample rate must be positive"
+        buffer, sr = librosa.load(path, sr=sample_rate, mono=False, dtype=np.float32)
+        if buffer.ndim == 1:
+            left, right = buffer, buffer
+        else:
+            left, right = buffer[0], buffer[1]
 
-    buffer, sr = librosa.load(path, sr=sample_rate, mono=False, dtype=np.float32)
-    if buffer.ndim == 1:
-        left, right = buffer, buffer
-    else:
-        left, right = buffer[0], buffer[1]
-
-    return Sound(left, right, sr)
+        return Sound(left, right, sr)

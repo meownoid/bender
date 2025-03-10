@@ -17,7 +17,7 @@ from bender.cli.utils import (
     SUPPORTED_EXTENSIONS,
 )
 from bender.entity import get_entities, Entity
-from bender.sound import load_sound
+from bender.sound import Sound
 from bender.transform import Transform, TransformResult
 
 DEFAULT_ALGORITHM = "bmp"
@@ -189,7 +189,7 @@ def _sound_to_image(
 
     click.echo(f"Found metadata at {metadata_path}")
 
-    sound = load_sound(file)
+    sound = Sound.load(file)
     metadata = json.loads(metadata_path.read_text())
 
     if algorithm is None:

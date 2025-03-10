@@ -3,7 +3,7 @@ name = "bender"
 version = "0.1.1"
 description = "Data bending toolkit"
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.12,<3.13"
 dependencies = [
     "click>=8.1.8",
     "librosa>=0.10.2.post1",
@@ -13,8 +13,18 @@ dependencies = [
     "watchdog>=6.0.0",
 ]
 
+[dependency-groups]
+dev = [
+    "pytest>=8.3.5",
+]
+
 [project.scripts]
 bender = "bender:__main__.main"
 
 [tool.mypy]
 plugins = "numpy.typing.mypy_plugin"
+
+[tool.pytest.ini_options]
+filterwarnings = [
+    "ignore::DeprecationWarning"
+]

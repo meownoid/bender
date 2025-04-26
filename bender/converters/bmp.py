@@ -6,7 +6,7 @@ import numpy as np
 from bender.entity import entity
 from bender.parameter import IntParameter, BoolParameter
 from bender.sound import Sound
-from bender.transform import TransformResult, Transform
+from bender.converter import ConvertedImage, Converter
 
 from PIL import Image, ImageFile
 
@@ -39,7 +39,7 @@ DTYPES: dict[int, np.dtype] = {
         ),
     },
 )
-class BMPTransform(Transform):
+class BMPConverter(Converter):
     def __init__(
         self, header_size: int = 54, sample_size: int = 1, average: bool = False
     ) -> None:
@@ -54,7 +54,7 @@ class BMPTransform(Transform):
         except LookupError:
             raise ValueError(f"Unsupported sample size: {sample_size}")
 
-    def encode(self, image: Image) -> TransformResult:
+    def encode(self, image: Image) -> ConvertedImage:
         with io.BytesIO() as fd:
             image.save(fd, format="BMP")
             fd.seek(0)
@@ -72,21 +72,21 @@ class BMPTransform(Transform):
         # scale to [-1, 1]
         mono = mono * 2.0 - 1.0
 
-        return TransformResult(
+        return ConvertedImage(
             sound=Sound(left=mono, right=mono, sample_rate=48000), metadata=metadata
         )
 
-    def decode(self, transform_result: TransformResult) -> Image:
+    def decode(self, converted_image: ConvertedImage) -> Image:
         header = np.frombuffer(
-            base64.b64decode(transform_result.metadata["header"].encode("utf-8")),
+            base64.b64decode(converted_image.metadata["header"].encode("utf-8")),
             dtype=np.uint8,
         ).copy()
 
         # get mono signal
         if self.average:
-            mono = (transform_result.sound.left + transform_result.sound.right) / 2.0
+            mono = (converted_image.sound.left + converted_image.sound.right) / 2.0
         else:
-            mono = transform_result.sound.left
+            mono = converted_image.sound.left
 
         # scale to [0, 1]
         mono = (mono + 1.0) / 2.0

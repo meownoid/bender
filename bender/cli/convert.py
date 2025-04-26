@@ -3,7 +3,7 @@ import importlib
 import json
 import pkgutil
 from pathlib import Path
-from typing import Iterable
+from typing import Iterable, Any
 
 import click
 from PIL import Image
@@ -18,18 +18,18 @@ from bender.cli.utils import (
 )
 from bender.entity import get_entities, Entity
 from bender.sound import Sound
-from bender.transform import Transform, TransformResult
+from bender.converter import Converter, ConvertedImage
 
 DEFAULT_ALGORITHM = "bmp"
 
 
 # options shared with monitor command
-transform_shared_options = [
+converter_shared_options = [
     click.option(
         "-a",
         "--algorithm",
         type=str,
-        help=f"Algorithm to use for transformation (default: {DEFAULT_ALGORITHM}).",
+        help=f"Algorithm to use for conversion (default: {DEFAULT_ALGORITHM}).",
         default=None,
     ),
     click.option(
@@ -71,17 +71,17 @@ def _import(name):
         importlib.import_module(name)
 
 
-def _import_transforms() -> dict[str, Entity[Transform]]:
-    _import("bender.transforms")
+def _import_converters() -> dict[str, Entity[Converter]]:
+    _import("bender.converters")
 
-    result = {}
-    for entity in get_entities(Transform):
-        if entity.name in result:
-            raise RuntimeError(f"duplicate transform {entity.name}")
+    converters = {}
+    for entity in get_entities(Converter):
+        if entity.name in converters:
+            raise RuntimeError(f"duplicate converter {entity.name}")
 
-        result[entity.name] = entity
+        converters[entity.name] = entity
 
-    return result
+    return converters
 
 
 def _find_metadata_file(path: Path) -> Path | None:
@@ -97,19 +97,19 @@ def _find_metadata_file(path: Path) -> Path | None:
     return max(candidates, key=lambda p: len(p.stem))
 
 
-def _build_transform(
+def _build_converter(
     algorithm: str,
-    parameters: dict[str, str],
-) -> Transform:
-    transform_entities = _import_transforms()
+    parameters: dict[str, Any],
+) -> Converter:
+    converter_entities = _import_converters()
 
-    if algorithm not in transform_entities:
+    if algorithm not in converter_entities:
         raise click.UsageError(
-            f"unknown transform {algorithm}, available: {', '.join(transform_entities)}"
+            f"unknown converter {algorithm}, available: {', '.join(converter_entities)}"
         )
 
     try:
-        return transform_entities[algorithm].build(parameters)
+        return converter_entities[algorithm].build(parameters)
     except ValueError as err:
         raise click.UsageError(*err.args)
 
@@ -130,8 +130,8 @@ def _image_to_sound(
     if image.mode != "RGB":
         image = image.convert("RGB")
 
-    transform = _build_transform(algorithm, parameters)
-    result = transform.encode(image)
+    converter = _build_converter(algorithm, parameters)
+    result = converter.encode(image)
     metadata = {
         "version": 1,
         "algorithm": algorithm,
@@ -197,8 +197,8 @@ def _sound_to_image(
 
     parameters = {**metadata["parameters"], **parameters}
 
-    transform = _build_transform(algorithm, parameters)
-    image = transform.decode(TransformResult(sound, metadata["metadata"]))
+    converter = _build_converter(algorithm, parameters)
+    image = converter.decode(ConvertedImage(sound, metadata["metadata"]))
 
     click.echo(f"Saving {output}")
     image.save(output, quality=quality)
@@ -206,17 +206,17 @@ def _sound_to_image(
     return output
 
 
-def _list_transforms(ctx, _, value) -> None:
+def _list_converters(ctx, _, value) -> None:
     if not value:
         return
 
-    for t in _import_transforms().values():
+    for t in _import_converters().values():
         click.echo(t.get_usage())
 
     ctx.exit()
 
 
-def _transform_command(
+def _convert_command(
     file: Path,
     algorithm: str | None,
     parameters: list[tuple[str, str]] | None = None,
@@ -233,7 +233,7 @@ def _transform_command(
     if output is None:
         output = Path.cwd()
 
-    click.echo(f"Transforming {file}")
+    click.echo(f"Converting {file}")
 
     if is_image_file(file):
         return _image_to_sound(
@@ -261,16 +261,16 @@ def _transform_command(
 
 
 @click.command(
-    "transform",
+    "convert",
     help="Convert images to sound and vice versa.",
 )
 @click.argument("files", type=click.Path(exists=True, path_type=Path), nargs=-1)
-@add_options(transform_shared_options)
+@add_options(converter_shared_options)
 @click.option(
     "--list",
     is_flag=True,
-    help="List all available transforms and exit.",
-    callback=_list_transforms,
+    help="List all available converters and exit.",
+    callback=_list_converters,
     expose_value=False,
     is_eager=True,
 )
@@ -286,9 +286,9 @@ def _transform_command(
     "--n-times",
     type=int,
     default=1,
-    help="Number of times to apply the transform.",
+    help="Number of times to apply the conversion.",
 )
 def convert_command(files: Iterable[Path], n_times: bool = False, **kwargs) -> None:
     for file in files:
         for _ in range(n_times):
-            file = _transform_command(file, **kwargs)
+            file = _convert_command(file, **kwargs)

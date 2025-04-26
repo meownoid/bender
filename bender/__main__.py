@@ -1,7 +1,7 @@
 import click
 
 from bender.cli.monitor import monitor_command
-from bender.cli.transform import convert_command
+from bender.cli.convert import convert_command
 
 
 @click.group()

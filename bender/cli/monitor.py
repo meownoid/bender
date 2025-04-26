@@ -10,7 +10,7 @@ from watchdog.events import (
 )
 from watchdog.observers import Observer
 
-from bender.cli.transform import transform_shared_options, _transform_command
+from bender.cli.convert import converter_shared_options, _convert_command
 from bender.cli.utils import add_options, is_image_file, is_sound_file
 
 
@@ -32,16 +32,16 @@ class WatchdogEventHandler(PatternMatchingEventHandler):
 
 
 @click.command(
-    "monitor", help="Automatically transform sound files with a given pattern."
+    "monitor", help="Automatically convert sound files with a given pattern."
 )
 @click.argument("patterns", nargs=-1)
-@add_options(transform_shared_options)
+@add_options(converter_shared_options)
 @click.option(
     "-r",
     "--recursive",
     is_flag=True,
     default=False,
-    help="Automatically open transformed files.",
+    help="Automatically open converted files.",
 )
 @click.option(
     "-o",
@@ -49,7 +49,7 @@ class WatchdogEventHandler(PatternMatchingEventHandler):
     "auto_open",
     is_flag=True,
     default=False,
-    help="Automatically open transformed files.",
+    help="Automatically open converted files.",
 )
 def monitor_command(
     patterns: list[str],
@@ -68,12 +68,12 @@ def monitor_command(
         if path in processing_results:
             return
 
-        click.echo(f"Transforming {path}")
+        click.echo(f"Converting {path}")
 
         try:
-            result_path = _transform_command(path, **kwargs)
+            result_path = _convert_command(path, **kwargs)
         except Exception as e:
-            click.echo(f"Error transforming {path}: {e}")
+            click.echo(f"Error converting {path}: {e}")
             return
 
         processing_results.add(result_path)

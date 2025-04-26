@@ -1,6 +1,6 @@
 import numpy as np
 
-from bender.transforms.utils import (
+from bender.converters.utils import (
     qam_encode,
     am_encode,
     rgb_to_ycbcr,
@@ -12,7 +12,7 @@ from bender.transforms.utils import (
 from bender.entity import entity
 from bender.parameter import IntParameter
 from bender.sound import Sound
-from bender.transform import TransformResult, Transform
+from bender.converter import Converter, ConvertedImage
 
 from PIL import Image, ImageFile
 
@@ -35,7 +35,7 @@ ImageFile.LOAD_TRUNCATED_IMAGES = True
         ),
     },
 )
-class QAMTransform(Transform):
+class QAMConverter(Converter):
     def __init__(self, carrier_frequency: int = 1300, sample_rate: int = 7800) -> None:
         super().__init__()
 
@@ -47,7 +47,7 @@ class QAMTransform(Transform):
         self.carrier_frequency = carrier_frequency
         self.sample_rate = sample_rate
 
-    def encode(self, image: Image) -> TransformResult:
+    def encode(self, image: Image) -> ConvertedImage:
         arr = np.array(image)
 
         metadata = {
@@ -64,20 +64,20 @@ class QAMTransform(Transform):
         # Bring left channel down to be closer to right channel
         left /= 2.0
 
-        return TransformResult(
+        return ConvertedImage(
             sound=Sound(left=left, right=right, sample_rate=self.sample_rate),
             metadata=metadata,
         )
 
-    def decode(self, transform_result: TransformResult) -> Image:
-        sound = transform_result.sound.resample(self.sample_rate)
+    def decode(self, converted_image: ConvertedImage) -> Image:
+        sound = converted_image.sound.resample(self.sample_rate)
 
         y = am_decode(sound.left * 2.0, self.carrier_frequency, self.sample_rate)
         c_b, c_r = qam_decode(sound.right, self.carrier_frequency, self.sample_rate)
 
         r, g, b = ycbcr_to_rgb(y, c_b, c_r)
 
-        shape = transform_result.metadata["shape"]
+        shape = converted_image.metadata["shape"]
         r = pad_reshape(r, shape)
         g = pad_reshape(g, shape)
         b = pad_reshape(b, shape)

@@ -288,7 +288,7 @@ def _transform_command(
     default=1,
     help="Number of times to apply the transform.",
 )
-def transform_command(files: Iterable[Path], n_times: bool = False, **kwargs) -> None:
+def convert_command(files: Iterable[Path], n_times: bool = False, **kwargs) -> None:
     for file in files:
         for _ in range(n_times):
             file = _transform_command(file, **kwargs)

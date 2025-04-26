@@ -21,26 +21,26 @@ _BENDER_COMPLETE=zsh_source bender > ~/.zshrc.d/bender-complete.zsh
 
 ## Usage
 
-### Transform images to sound and back
+### Convert images to sound and back
 
-Transform image to sound:
+Convert image to sound:
 
 ```bash
-bender transform image.jpg
+bender convert image.jpg
 ```
 
-This will create `image-xxxx.wav` and `image-xxxx.json` files using the default algorithm. Second file contains metadata needed for reverse transformation.
+This will create `image-xxxx.wav` and `image-xxxx.json` files using the default algorithm. Second file contains metadata needed for reverse conversion.
 
 You can specify the output file name:
 
 ```bash
-bender transform image.jpg -o image.wav
+bender convert image.jpg -o image.wav
 ```
 
-Transform sound to image:
+Convert sound to image:
 
 ```bash
-bender transform image-xxxx-processed.wav
+bender convert image-xxxx-processed.wav
 ```
 
 Corresponding `json` file with the longest matching prefix will be selected automatically.
@@ -48,13 +48,13 @@ Corresponding `json` file with the longest matching prefix will be selected auto
 To show all available algorithms and their parameters:
 
 ```bash
-bender transform --list
+bender convert --list
 ```
 
 To use specific algorithm and parameters:
 
 ```bash
-bender transform -a bmp -p sample_size 1 image.jpg
+bender convert -a bmp -p sample_size 1 image.jpg
 ```
 
 ### Monitor processed sound files
@@ -65,10 +65,10 @@ To automatically monitor and process sound files matching given patterns:
 bender monitor 'image1-*.wav'
 ```
 
-As soon as new sound file with prefix `image1-` or `image2-` appears in the directory, it will be transformed back to image.
+As soon as new sound file with prefix `image1-` or `image2-` appears in the directory, it will be converted back to image.
 Notice the use of quotes to prevent shell from expanding the pattern.
 
-To monitor all sound files in the directory and open resulting images after transformation:
+To monitor all sound files in the directory and open resulting images after conversion:
 
 ```bash
 bender monitor -o '*.wav'

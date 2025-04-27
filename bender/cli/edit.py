@@ -86,7 +86,7 @@ def _edit_command(
 
 @click.command(
     "edit",
-    help="Edit and combine multiple images into one.",
+    help="Edit image(s) using a specified algorithm.",
 )
 @click.argument("files", type=click.Path(exists=True, path_type=Path), nargs=-1)
 @click.option(

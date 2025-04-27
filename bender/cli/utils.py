@@ -69,14 +69,14 @@ def _import(name):
     # Import the parent module
     module = importlib.import_module(name)
 
-    for _, name, is_pkg in pkgutil.iter_modules(module.__path__, name + "."):  # noqa: F821
+    for _, name, is_pkg in pkgutil.iter_modules(module.__path__, name + "."):
         if is_pkg:
             continue
 
         importlib.import_module(name)
 
 
-def import_entities[T](cls: type[T], path: str) -> dict[str, Entity[T]]:  # noqa: F821
+def import_entities[T](cls: type[T], path: str) -> dict[str, Entity[T]]:
     _import(path)
 
     result = {}

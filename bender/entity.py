@@ -1,6 +1,8 @@
 from dataclasses import dataclass, field
 from typing import Callable, Iterable
 
+import click
+
 from bender.parameter import Parameter, build_parameters
 
 
@@ -12,10 +14,17 @@ class Entity[T]:
     cls: type[T]
 
     def get_usage(self) -> str:
-        lines = [f"{self.name}: {self.description}"]
+        # Entity name in bold and bright green, description in white
+        lines = [
+            f"{click.style(self.name, fg='bright_green', bold=True)}: "
+            f"{click.style(self.description, fg='white')}"
+        ]
 
+        # Parameters in cyan with yellow parameter names
         for name, parameter in self.parameters.items():
-            lines.append(f"  - {name}: {parameter.get_usage()}")
+            param_name = click.style(name, fg="yellow")
+            param_usage = parameter.get_usage()
+            lines.append(f"  - {param_name}: {click.style(param_usage, fg='cyan')}")
 
         return "\n".join(lines)
 

@@ -1,24 +1,22 @@
 import hashlib
-import importlib
 import json
-import pkgutil
 from pathlib import Path
-from typing import Iterable, Any
+from typing import Any, Iterable
 
 import click
 from PIL import Image
 
 from bender.cli.utils import (
+    SUPPORTED_EXTENSIONS,
     MappedChoice,
     add_options,
+    import_entities,
     is_image_file,
     is_sound_file,
     parameters_to_dict,
-    SUPPORTED_EXTENSIONS,
 )
-from bender.entity import get_entities, Entity
+from bender.converter import ConvertedImage, Converter
 from bender.sound import Sound
-from bender.converter import Converter, ConvertedImage
 
 DEFAULT_ALGORITHM = "bmp"
 
@@ -60,30 +58,6 @@ converter_shared_options = [
 ]
 
 
-def _import(name):
-    # Import the parent module
-    module = importlib.import_module(name)
-
-    for _, name, is_pkg in pkgutil.iter_modules(module.__path__, name + "."):
-        if is_pkg:
-            continue
-
-        importlib.import_module(name)
-
-
-def _import_converters() -> dict[str, Entity[Converter]]:
-    _import("bender.converters")
-
-    converters = {}
-    for entity in get_entities(Converter):
-        if entity.name in converters:
-            raise RuntimeError(f"duplicate converter {entity.name}")
-
-        converters[entity.name] = entity
-
-    return converters
-
-
 def _find_metadata_file(path: Path) -> Path | None:
     candidates = []
 
@@ -101,7 +75,7 @@ def _build_converter(
     algorithm: str,
     parameters: dict[str, Any],
 ) -> Converter:
-    converter_entities = _import_converters()
+    converter_entities = import_entities(Converter, "bender.converters")
 
     if algorithm not in converter_entities:
         raise click.UsageError(
@@ -210,7 +184,7 @@ def _list_converters(ctx, _, value) -> None:
     if not value:
         return
 
-    for t in _import_converters().values():
+    for t in import_entities(Converter, "bender.converters").values():
         click.echo(t.get_usage())
 
     ctx.exit()

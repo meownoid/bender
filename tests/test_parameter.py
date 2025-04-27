@@ -1,9 +1,10 @@
 import pytest
+
 from bender.parameter import (
-    StringParameter,
     BoolParameter,
-    IntParameter,
     FloatParameter,
+    IntParameter,
+    StringParameter,
     build_parameters,
 )
 

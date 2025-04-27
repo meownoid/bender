@@ -1,7 +1,8 @@
 import numpy as np
+
 from bender.converters.utils import (
-    pad_reshape,
     lowpass,
+    pad_reshape,
     rgb_to_ycbcr,
     ycbcr_to_rgb,
 )

@@ -1,9 +1,13 @@
+import importlib
+import pkgutil
 from pathlib import Path
 from typing import Any
 
 import click
 
-IMAGE_EXTENSIONS = [
+from bender.entity import Entity, get_entities
+
+SUPPORTED_IMAGE_EXTENSIONS = [
     ".bmp",
     ".gif",
     ".jpg",
@@ -14,9 +18,9 @@ IMAGE_EXTENSIONS = [
     ".webp",
 ]
 
-SOUND_EXTENSIONS = [".wav", ".aiff"]
+SUPPORTED_SOUND_EXTENSIONS = [".wav", ".aiff"]
 
-SUPPORTED_EXTENSIONS = IMAGE_EXTENSIONS + SOUND_EXTENSIONS
+SUPPORTED_EXTENSIONS = SUPPORTED_IMAGE_EXTENSIONS + SUPPORTED_SOUND_EXTENSIONS
 
 
 class MappedChoice(click.Choice):
@@ -41,13 +45,13 @@ def add_options(options):
 def is_image_file(name: Path | str) -> bool:
     name = Path(name)
 
-    return name.suffix in IMAGE_EXTENSIONS
+    return name.suffix in SUPPORTED_IMAGE_EXTENSIONS
 
 
 def is_sound_file(name: Path | str) -> bool:
     name = Path(name)
 
-    return name.suffix in SOUND_EXTENSIONS
+    return name.suffix in SUPPORTED_SOUND_EXTENSIONS
 
 
 def parameters_to_dict(parameters: list[tuple[str, str]]) -> dict[str, str]:
@@ -57,5 +61,29 @@ def parameters_to_dict(parameters: list[tuple[str, str]]) -> dict[str, str]:
             raise click.UsageError(f"duplicate parameter {key}")
 
         result[key] = value
+
+    return result
+
+
+def _import(name):
+    # Import the parent module
+    module = importlib.import_module(name)
+
+    for _, name, is_pkg in pkgutil.iter_modules(module.__path__, name + "."):  # noqa: F821
+        if is_pkg:
+            continue
+
+        importlib.import_module(name)
+
+
+def import_entities[T](cls: type[T], path: str) -> dict[str, Entity[T]]:  # noqa: F821
+    _import(path)
+
+    result = {}
+    for entity in get_entities(cls):
+        if entity.name in result:
+            raise RuntimeError(f"duplicate {cls.__class__.__name__} {entity.name}")
+
+        result[entity.name] = entity
 
     return result

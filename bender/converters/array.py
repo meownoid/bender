@@ -1,14 +1,13 @@
 import itertools
 
 import numpy as np
+from PIL import Image, ImageFile
 
+from bender.converter import ConvertedImage, Converter
 from bender.converters.utils import pad_reshape
 from bender.entity import entity
-from bender.parameter import IntParameter, BoolParameter
+from bender.parameter import BoolParameter, IntParameter
 from bender.sound import Sound
-from bender.converter import ConvertedImage, Converter
-
-from PIL import Image, ImageFile
 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 

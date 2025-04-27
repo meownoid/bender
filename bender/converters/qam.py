@@ -1,20 +1,19 @@
 import numpy as np
+from PIL import Image, ImageFile
 
+from bender.converter import ConvertedImage, Converter
 from bender.converters.utils import (
-    qam_encode,
-    am_encode,
-    rgb_to_ycbcr,
     am_decode,
-    qam_decode,
-    ycbcr_to_rgb,
+    am_encode,
     pad_reshape,
+    qam_decode,
+    qam_encode,
+    rgb_to_ycbcr,
+    ycbcr_to_rgb,
 )
 from bender.entity import entity
 from bender.parameter import IntParameter
 from bender.sound import Sound
-from bender.converter import Converter, ConvertedImage
-
-from PIL import Image, ImageFile
 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 

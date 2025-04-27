@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from typing import Any
+
 from PIL import Image
 
 from bender.sound import Sound

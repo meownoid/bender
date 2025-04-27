@@ -1,7 +1,8 @@
 import numpy as np
 from PIL import Image
-from bender.entity import get_entities
+
 from bender.converter import Converter
+from bender.entity import get_entities
 
 
 def test_image_conversion():

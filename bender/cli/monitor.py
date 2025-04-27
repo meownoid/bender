@@ -1,6 +1,6 @@
 import time
 from pathlib import Path
-from typing import Callable, Any
+from typing import Any, Callable
 
 import click
 from watchdog.events import (
@@ -10,7 +10,7 @@ from watchdog.events import (
 )
 from watchdog.observers import Observer
 
-from bender.cli.convert import converter_shared_options, _convert_command
+from bender.cli.convert import _convert_command, converter_shared_options
 from bender.cli.utils import add_options, is_image_file, is_sound_file
 
 

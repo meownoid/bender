@@ -2,13 +2,12 @@ import base64
 import io
 
 import numpy as np
-
-from bender.entity import entity
-from bender.parameter import IntParameter, BoolParameter
-from bender.sound import Sound
-from bender.converter import ConvertedImage, Converter
-
 from PIL import Image, ImageFile
+
+from bender.converter import ConvertedImage, Converter
+from bender.entity import entity
+from bender.parameter import BoolParameter, IntParameter
+from bender.sound import Sound
 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 

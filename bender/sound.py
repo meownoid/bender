@@ -45,7 +45,9 @@ class Sound:
             res_type="soxr_vhq",
         )
 
-        return Sound(resample(self.left), resample(self.right), sample_rate)
+        return Sound(
+            resample(self.left), resample(self.right), sample_rate, self.filename
+        )
 
     def process(self, fn: Callable[[np.ndarray], np.ndarray]) -> "Sound":
         """
@@ -54,7 +56,7 @@ class Sound:
         :param fn: function to apply to both channels
         :return: new Sound object with the processed channels
         """
-        return Sound(fn(self.left), fn(self.right), self.sample_rate)
+        return Sound(fn(self.left), fn(self.right), self.sample_rate, self.filename)
 
     def save(self, path: str | Path, bit_depth: int = 16):
         match bit_depth:

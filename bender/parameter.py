@@ -59,6 +59,35 @@ class BoolParameter(Parameter[bool]):
 
 
 @dataclass(frozen=True)
+class ChoiceParameter(Parameter[str]):
+    """
+    Choice parameter, accepts a list of values.
+    """
+
+    choices: list[str] | None = None
+
+    def get_usage(self) -> str:
+        result = super().get_usage()
+
+        if self.choices is not None:
+            result += f" [{', '.join(self.choices)}]"
+
+        return result
+
+    def parse(self, text: str) -> str:
+        if self.choices is None:
+            raise ValueError("No choices defined")
+
+        text = text.strip()
+
+        for choice in self.choices:
+            if choice.lower() == text.lower():
+                return choice
+
+        raise ValueError(f"Invalid choice: {text}")
+
+
+@dataclass(frozen=True)
 class MinMaxParameter[T: Ordered](Parameter[T]):
     min_value: T | None = None
     max_value: T | None = None

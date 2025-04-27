@@ -66,7 +66,6 @@ def parameters_to_dict(parameters: list[tuple[str, str]]) -> dict[str, str]:
 
 
 def _import(name):
-    # Import the parent module
     module = importlib.import_module(name)
 
     for _, name, is_pkg in pkgutil.iter_modules(module.__path__, name + "."):

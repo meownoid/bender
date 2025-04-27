@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Any, Iterable
 
 import click
-from PIL import Image
+from PIL import Image, ImageOps
 
 from bender.cli.utils import (
     SUPPORTED_EXTENSIONS,
@@ -104,8 +104,17 @@ def _image_to_sound(
     if image.mode != "RGB":
         image = image.convert("RGB")
 
+    image = ImageOps.exif_transpose(image)
+
+    if not hasattr(image, "filename") or not image.filename:
+        image.filename = str(file)
+
     converter = _build_converter(algorithm, parameters)
     result = converter.encode(image)
+
+    if not isinstance(result, ConvertedImage):
+        raise click.UsageError(f"converter returned invalid result: {result}")
+
     metadata = {
         "version": 1,
         "algorithm": algorithm,
@@ -173,6 +182,12 @@ def _sound_to_image(
 
     converter = _build_converter(algorithm, parameters)
     image = converter.decode(ConvertedImage(sound, metadata["metadata"]))
+
+    if not isinstance(image, Image.Image):
+        raise click.UsageError(f"converter returned invalid result: {image}")
+
+    if image.mode != "RGB":
+        image = image.convert("RGB")
 
     click.echo(f"Saving {output}")
     image.save(output, quality=quality)

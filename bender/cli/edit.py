@@ -1,8 +1,10 @@
+import os
+import secrets
 from pathlib import Path
-from typing import Any, Iterable, List
+from typing import Any, Iterable
 
 import click
-from PIL import Image
+from PIL import Image, ImageOps
 
 from bender.cli.utils import (
     import_entities,
@@ -40,7 +42,7 @@ def _list_editors(ctx, _, value) -> None:
 
 
 def _edit_command(
-    files: List[Path],
+    files: list[Path],
     algorithm: str,
     parameters: list[tuple[str, str]] | None = None,
     quality: int = 95,
@@ -52,14 +54,6 @@ def _edit_command(
 
     parameter_dict = parameters_to_dict(parameters)
 
-    if output is None:
-        output = Path.cwd() / "edited.jpg"
-    elif output.is_dir():
-        output = output / "edited.jpg"
-
-    if not force and output.exists():
-        raise click.UsageError(f"{output} already exists, use -f to overwrite")
-
     images = []
     for file in files:
         if not is_image_file(file):
@@ -67,19 +61,61 @@ def _edit_command(
 
         click.echo(f"Loading {file}")
         image = Image.open(file)
+
         if image.mode != "RGB":
             image = image.convert("RGB")
+
+        image = ImageOps.exif_transpose(image)
+
+        if not hasattr(image, "filename") or not image.filename:
+            image.filename = str(file)
+
         images.append(image)
 
     if not images:
         raise click.UsageError("No input images provided")
 
     editor = _build_editor(algorithm, parameter_dict)
-    click.echo(f"Editing {len(images)} images with algorithm '{algorithm}'")
-    result = editor.edit(images)
+    click.echo(
+        f"Editing {len(images)} image{'s' if len(images) > 1 else ''} with algorithm '{algorithm}'"
+    )
+    results = editor.edit(images)
 
-    click.echo(f"Saving result to {output}")
-    result.save(output, quality=quality)
+    if output is None:
+        output = Path.cwd()
+
+    if output is not None and output.is_file() and len(results) > 1:
+        raise click.UsageError(
+            f"{output} is not a directory, but multiple images were returned"
+        )
+
+    for result in results:
+        if not isinstance(result, Image.Image):
+            raise click.UsageError(f"Editor returned invalid result: {result}")
+
+        try:
+            filename = result.filename
+        except AttributeError:
+            filename = None
+
+        if filename is None:
+            filename = f"edited-{secrets.token_hex(8)}.jpg"
+        else:
+            filename = os.path.basename(filename)
+
+        if result.mode != "RGB":
+            result = result.convert("RGB")
+
+        if output.is_dir():
+            output_path = output / filename
+        else:
+            output_path = output
+
+        if not force and output_path.exists():
+            raise click.UsageError(f"{output_path} already exists, use -f to overwrite")
+
+        click.echo(f"Saving {output_path}")
+        result.save(output_path, quality=quality)
 
     return output
 

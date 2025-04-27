@@ -13,6 +13,7 @@ class Sound:
     left: np.ndarray
     right: np.ndarray
     sample_rate: int
+    filename: str | None = None
 
     def __post_init__(self):
         assert self.left.ndim == 1, "Left channel must be 1D"
@@ -87,4 +88,4 @@ class Sound:
         else:
             left, right = buffer[0], buffer[1]
 
-        return Sound(left, right, sr)
+        return Sound(left, right, sr, str(path))

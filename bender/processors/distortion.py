@@ -2,7 +2,7 @@ import numpy as np
 
 from bender.entity import entity
 from bender.parameter import FloatParameter
-from bender.processor import SingleSoundProcessor
+from bender.processor import OneToOneProcessor
 from bender.sound import Sound
 
 
@@ -19,15 +19,15 @@ from bender.sound import Sound
         )
     },
 )
-class DistortionProcessor(SingleSoundProcessor):
+class DistortionProcessor(OneToOneProcessor):
     def __init__(self, gain: float) -> None:
         self.gain = gain
 
     def _tanh(self, x: np.ndarray) -> np.ndarray:
         return np.tanh(x) * 0.5 + 0.5
 
-    def _process(self, sound: Sound) -> list[Sound]:
+    def _process(self, sound: Sound) -> Sound:
         sound = sound.process(lambda x: x * self.gain)
         sound = sound.process(self._tanh)
 
-        return [sound]
+        return sound

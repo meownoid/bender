@@ -2,7 +2,7 @@ import os
 
 from PIL import Image
 
-from bender.editor import SingleImageEditor
+from bender.editor import OneToManyEditor
 from bender.entity import entity
 from bender.parameter import ChoiceParameter
 
@@ -18,7 +18,7 @@ from bender.parameter import ChoiceParameter
         ),
     },
 )
-class SplitChannelsEditor(SingleImageEditor):
+class SplitChannelsEditor(OneToManyEditor):
     def __init__(self, mode: str):
         self.mode = mode
 

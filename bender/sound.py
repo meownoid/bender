@@ -58,6 +58,15 @@ class Sound:
         """
         return Sound(fn(self.left), fn(self.right), self.sample_rate, self.filename)
 
+    def with_filename(self, filename: str) -> "Sound":
+        """
+        Set the filename of the Sound object.
+
+        :param filename: new filename
+        :return: new Sound object with the updated filename
+        """
+        return Sound(self.left, self.right, self.sample_rate, filename)
+
     def save(self, path: str | Path, bit_depth: int = 16):
         match bit_depth:
             case 8:

@@ -86,12 +86,9 @@ def _process_command(
             raise click.UsageError(f"Processor returned invalid result: {result}")
 
         if result.filename is None:
-            filename = f"processed-{secrets.token_hex(8)}.wav"
+            filename = f"processed-{secrets.token_hex(4)}.wav"
         else:
             filename = os.path.basename(result.filename)
-            # Change extension to .wav if it's not a supported sound file
-            if not is_sound_file(filename):
-                filename = f"{Path(filename).stem}.wav"
 
         if output.is_dir():
             output_path = output / filename
@@ -100,6 +97,9 @@ def _process_command(
 
         if not force and output_path.exists():
             raise click.UsageError(f"{output_path} already exists, use -f to overwrite")
+
+        # Change extension to .wav
+        filename = f"{Path(filename).stem}.wav"
 
         click.echo(f"Saving {output_path}")
         result.save(output_path, bit_depth=bit_depth)

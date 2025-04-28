@@ -99,7 +99,7 @@ def _edit_command(
             filename = None
 
         if filename is None:
-            filename = f"edited-{secrets.token_hex(8)}.jpg"
+            filename = f"edited-{secrets.token_hex(4)}.jpg"
         else:
             filename = os.path.basename(filename)
 

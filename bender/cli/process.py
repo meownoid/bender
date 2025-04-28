@@ -88,7 +88,7 @@ def _process_command(
         if result.filename is None:
             filename = f"processed-{secrets.token_hex(8)}.wav"
         else:
-            filename = os.path.basename(filename)
+            filename = os.path.basename(result.filename)
             # Change extension to .wav if it's not a supported sound file
             if not is_sound_file(filename):
                 filename = f"{Path(filename).stem}.wav"

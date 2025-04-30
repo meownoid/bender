@@ -5,6 +5,7 @@ from typing import Any, Iterable
 
 import click
 
+from bender.cli.autocomplete import autocomplete
 from bender.cli.utils import (
     import_entities,
     is_sound_file,
@@ -118,6 +119,7 @@ def _process_command(
     type=str,
     help="Algorithm to use for processing.",
     required=True,
+    shell_complete=autocomplete,
 )
 @click.option(
     "-p",
@@ -126,6 +128,7 @@ def _process_command(
     type=(str, str),
     multiple=True,
     help="Algorithm parameters.",
+    shell_complete=autocomplete,
 )
 @click.option(
     "-b",

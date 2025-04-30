@@ -6,6 +6,7 @@ from typing import Any, Iterable
 import click
 from PIL import Image, ImageOps
 
+from bender.cli.autocomplete import autocomplete
 from bender.cli.utils import (
     import_entities,
     is_image_file,
@@ -131,6 +132,7 @@ def _edit_command(
     type=str,
     help="Algorithm to use for editing.",
     required=True,
+    shell_complete=autocomplete,
 )
 @click.option(
     "-p",
@@ -139,6 +141,7 @@ def _edit_command(
     type=(str, str),
     multiple=True,
     help="Algorithm parameters.",
+    shell_complete=autocomplete,
 )
 @click.option(
     "-q",

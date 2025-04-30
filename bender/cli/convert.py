@@ -6,6 +6,7 @@ from typing import Any, Iterable
 import click
 from PIL import Image, ImageOps
 
+from bender.cli.autocomplete import autocomplete
 from bender.cli.utils import (
     SUPPORTED_EXTENSIONS,
     MappedChoice,
@@ -29,6 +30,7 @@ converter_shared_options = [
         type=str,
         help=f"Algorithm to use for conversion (default: {DEFAULT_ALGORITHM}).",
         default=None,
+        shell_complete=autocomplete,
     ),
     click.option(
         "-p",
@@ -37,6 +39,7 @@ converter_shared_options = [
         type=(str, str),
         multiple=True,
         help="Algorithm parameters.",
+        shell_complete=autocomplete,
     ),
     click.option(
         "-q",

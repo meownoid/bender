@@ -1,7 +1,9 @@
+from typing import Callable
+
 import numpy as np
 
 from bender.entity import entity
-from bender.parameter import FloatParameter
+from bender.parameter import ChoiceParameter, FloatParameter
 from bender.processor import OneToOneProcessor
 from bender.sound import Sound
 
@@ -16,18 +18,33 @@ from bender.sound import Sound
             max_value=10.0,
             clamp=True,
             description="Gain factor",
-        )
+        ),
+        "kind": ChoiceParameter(
+            default="tanh",
+            choices=["tanh", "hard"],
+            description="Distortion type",
+        ),
     },
 )
 class DistortionProcessor(OneToOneProcessor):
-    def __init__(self, gain: float) -> None:
+    def __init__(self, gain: float, kind: str) -> None:
         self.gain = gain
+        self.kind = kind
 
-    def _tanh(self, x: np.ndarray) -> np.ndarray:
+    def tanh(self, x: np.ndarray) -> np.ndarray:
         return np.tanh(x) * 0.5 + 0.5
 
-    def _process(self, sound: Sound) -> Sound:
-        sound = sound.process(lambda x: x * self.gain)
-        sound = sound.process(self._tanh)
+    def hard(self, x: np.ndarray) -> np.ndarray:
+        return np.clip(x, -1, 1)
 
-        return sound
+    def get_distortion(self, kind: str) -> Callable[[np.ndarray], np.ndarray]:
+        if kind == "tanh":
+            return self.tanh
+        elif kind == "hard":
+            return self.hard
+        else:
+            raise ValueError(f"Unknown distortion kind: {kind}")
+
+    def _process(self, sound: Sound) -> Sound:
+        fn = self.get_distortion(self.kind)
+        return sound.process(lambda x: fn(x * self.gain))

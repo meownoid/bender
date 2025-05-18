@@ -99,4 +99,4 @@ class Sound:
         else:
             left, right = buffer[0], buffer[1]
 
-        return Sound(left, right, sr, str(path))
+        return Sound(left, right, int(sr), str(path))

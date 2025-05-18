@@ -31,7 +31,7 @@ def test_hard_distortion():
     processor = DistortionProcessor(gain=1.0, kind="hard")
 
     input_values = np.array([-2.0, -1.0, 0.0, 0.5, 1.0, 2.0])
-    expected_output = np.array([-1.0, -1.0, 0.0, 0.5, 1.0, 1.0])
+    expected_output = np.array([0.0, 0.0, 0.0, 0.5, 1.0, 1.0])
 
     output_values = processor.hard(input_values)
 
@@ -76,10 +76,10 @@ def test_process_hard():
     processed = processor._process(sound)
 
     input_left = left * 1.5
-    expected_left = np.clip(input_left, -1, 1)
+    expected_left = np.clip(input_left, 0, 1)
 
     input_right = right * 1.5
-    expected_right = np.clip(input_right, -1, 1)
+    expected_right = np.clip(input_right, 0, 1)
 
     assert np.allclose(processed.left, expected_left)
     assert np.allclose(processed.right, expected_right)

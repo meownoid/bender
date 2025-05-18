@@ -35,7 +35,7 @@ class DistortionProcessor(OneToOneProcessor):
         return np.tanh(x) * 0.5 + 0.5
 
     def hard(self, x: np.ndarray) -> np.ndarray:
-        return np.clip(x, -1, 1)
+        return np.clip(x, 0, 1)
 
     def get_distortion(self, kind: str) -> Callable[[np.ndarray], np.ndarray]:
         if kind == "tanh":

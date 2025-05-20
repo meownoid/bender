@@ -46,7 +46,7 @@ class QAMConverter(Converter):
         self.carrier_frequency = carrier_frequency
         self.sample_rate = sample_rate
 
-    def encode(self, image: Image) -> ConvertedImage:
+    def encode(self, image: Image.Image) -> ConvertedImage:
         arr = np.array(image)
 
         metadata = {
@@ -68,7 +68,7 @@ class QAMConverter(Converter):
             metadata=metadata,
         )
 
-    def decode(self, converted_image: ConvertedImage) -> Image:
+    def decode(self, converted_image: ConvertedImage) -> Image.Image:
         sound = converted_image.sound.resample(self.sample_rate)
 
         y = am_decode(sound.left * 2.0, self.carrier_frequency, self.sample_rate)

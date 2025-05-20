@@ -18,7 +18,7 @@ class Converter:
             f"encode is not implemented in {self.__class__.__name__}"
         )
 
-    def decode(self, image_sound: ConvertedImage) -> Image:
+    def decode(self, converted_image: ConvertedImage) -> Image.Image:
         raise NotImplementedError(
             f"decode is not implemented in {self.__class__.__name__}"
         )

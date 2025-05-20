@@ -53,7 +53,7 @@ class BMPConverter(Converter):
         except LookupError:
             raise ValueError(f"Unsupported sample size: {sample_size}")
 
-    def encode(self, image: Image) -> ConvertedImage:
+    def encode(self, image: Image.Image) -> ConvertedImage:
         with io.BytesIO() as fd:
             image.save(fd, format="BMP")
             fd.seek(0)
@@ -75,7 +75,7 @@ class BMPConverter(Converter):
             sound=Sound(left=mono, right=mono, sample_rate=48000), metadata=metadata
         )
 
-    def decode(self, converted_image: ConvertedImage) -> Image:
+    def decode(self, converted_image: ConvertedImage) -> Image.Image:
         header = np.frombuffer(
             base64.b64decode(converted_image.metadata["header"].encode("utf-8")),
             dtype=np.uint8,

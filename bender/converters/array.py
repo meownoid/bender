@@ -38,7 +38,7 @@ class ArrayConverter(Converter):
     def _get_axes(self) -> tuple[int, ...]:
         return self._axes_permutations[self.order % len(self._axes_permutations)]
 
-    def encode(self, image: Image) -> ConvertedImage:
+    def encode(self, image: Image.Image) -> ConvertedImage:
         # scale to [-1, 1]
         arr = np.array(image).astype(np.float32) / 255.0
         arr = arr * 2.0 - 1.0
@@ -56,7 +56,7 @@ class ArrayConverter(Converter):
             sound=Sound(left=mono, right=mono, sample_rate=48000), metadata=metadata
         )
 
-    def decode(self, converted_image: ConvertedImage) -> Image:
+    def decode(self, converted_image: ConvertedImage) -> Image.Image:
         shape = converted_image.metadata["shape"]
 
         # get mono signal

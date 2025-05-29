@@ -29,4 +29,4 @@ class SplitChannelsEditor(OneToManyEditor):
         for i, channel in enumerate(result):
             channel.filename = f"{filename}_{self.mode}_{i}.jpg"
 
-        return result
+        return list(result)

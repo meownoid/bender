@@ -1,11 +1,16 @@
 from dataclasses import dataclass
 from typing import Any
 
+from bender.modulation import Modulation
 from bender.utils import Ordered
 
 
 @dataclass(frozen=True)
 class Parameter[T]:
+    """
+    Base class for parameters, defines the interface for parsing and usage.
+    """
+
     description: str | None = None
     default: T | None = None
     required: bool = False
@@ -89,6 +94,10 @@ class ChoiceParameter(Parameter[str]):
 
 @dataclass(frozen=True)
 class MinMaxParameter[T: Ordered](Parameter[T]):
+    """
+    Base class for parameters with minimum and maximum values.
+    """
+
     min_value: T | None = None
     max_value: T | None = None
     clamp: bool = False
@@ -131,14 +140,35 @@ class MinMaxParameter[T: Ordered](Parameter[T]):
 
 @dataclass(frozen=True)
 class IntParameter(MinMaxParameter[int]):
+    """
+    Integer parameter, parses the input as an integer.
+    """
+
     def _parse(self, text: str) -> int:
         return int(text)
 
 
 @dataclass(frozen=True)
 class FloatParameter(MinMaxParameter[float]):
+    """
+    Float parameter, parses the input as a float.
+    """
+
     def _parse(self, text: str) -> float:
         return float(text)
+
+
+@dataclass(frozen=True)
+class ModulationParameter(Parameter[Modulation]):
+    """
+    Modulation parameter, parses the input as a modulation expression.
+    """
+
+    min_value: float | None = None
+    max_value: float | None = None
+
+    def parse(self, text: str) -> Modulation:
+        return Modulation(text, min_value=self.min_value, max_value=self.max_value)
 
 
 def build_parameters(

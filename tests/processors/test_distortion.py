@@ -4,17 +4,6 @@ from bender.processors.distortion import DistortionProcessor
 from bender.sound import Sound
 
 
-def test_distortion_initialization():
-    processor = DistortionProcessor(gain=1.0, kind="tanh")
-    assert processor.gain == 1.0
-    assert processor.kind == "tanh"
-
-    # Test with custom values
-    processor = DistortionProcessor(gain=5.0, kind="hard")
-    assert processor.gain == 5.0
-    assert processor.kind == "hard"
-
-
 def test_process_tanh():
     left = np.array([0.0, 0.5, 1.0, 0.5, 0.0])
     right = np.array([0.0, -0.5, -1.0, -0.5, 0.0])

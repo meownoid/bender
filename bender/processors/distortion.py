@@ -3,7 +3,8 @@ from typing import Callable
 import numpy as np
 
 from bender.entity import entity
-from bender.parameter import ChoiceParameter, FloatParameter
+from bender.modulation import Modulation
+from bender.parameter import ChoiceParameter, ModulationParameter
 from bender.processor import OneToOneProcessor
 from bender.sound import Sound
 
@@ -12,11 +13,9 @@ from bender.sound import Sound
     name="distortion",
     description="Increase gain and add distortion to the sound",
     parameters={
-        "gain": FloatParameter(
-            default=1.0,
+        "gain": ModulationParameter(
             min_value=0.0,
             max_value=10.0,
-            clamp=True,
             description="Gain factor",
         ),
         "kind": ChoiceParameter(
@@ -27,8 +26,8 @@ from bender.sound import Sound
     },
 )
 class DistortionProcessor(OneToOneProcessor):
-    def __init__(self, gain: float, kind: str) -> None:
-        self.gain = gain
+    def __init__(self, gain: float | str | Modulation, kind: str) -> None:
+        self.gain = Modulation(gain)
         self.kind = kind
 
     def get_distortion(self, kind: str) -> Callable[[np.ndarray], np.ndarray]:
@@ -41,4 +40,5 @@ class DistortionProcessor(OneToOneProcessor):
 
     def _process(self, sound: Sound) -> Sound:
         fn = self.get_distortion(self.kind)
-        return sound.process(lambda x: fn(x * self.gain))
+        gain = self.gain.like(sound)
+        return sound.process(lambda x: fn(x * gain))

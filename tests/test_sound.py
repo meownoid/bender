@@ -15,10 +15,10 @@ def test_sound_initialization():
     assert np.array_equal(sound.right, right)
     assert sound.sample_rate == sample_rate
 
-    with pytest.raises(AssertionError):
+    with pytest.raises(ValueError):
         Sound(left[:-1], right, sample_rate)  # Unequal channel lengths
 
-    with pytest.raises(AssertionError):
+    with pytest.raises(ValueError):
         Sound(np.array([]), np.array([]), -44100)  # Negative sample rate
 
 

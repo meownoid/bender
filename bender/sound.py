@@ -16,12 +16,14 @@ class Sound:
     filename: str | None = None
 
     def __post_init__(self):
-        assert self.left.ndim == 1, "Left channel must be 1D"
-        assert self.right.ndim == 1, "Right channel must be 1D"
-        assert len(self.left) == len(self.right), (
-            "Left and right channels must have the same length"
-        )
-        assert self.sample_rate > 0, "Sample rate must be positive"
+        if self.left.ndim != 1:
+            raise ValueError("Left channel must be 1D")
+        if self.right.ndim != 1:
+            raise ValueError("Right channel must be 1D")
+        if len(self.left) != len(self.right):
+            raise ValueError("Left and right channels must have the same length")
+        if self.sample_rate <= 0:
+            raise ValueError("Sample rate must be positive")
 
     def resample(self, sample_rate: int) -> "Sound":
         """
@@ -67,7 +69,13 @@ class Sound:
         """
         return Sound(self.left, self.right, self.sample_rate, filename)
 
-    def save(self, path: str | Path, bit_depth: int = 16):
+    def save(self, path: str | Path, bit_depth: int = 16) -> None:
+        """
+        Save the sound to a file.
+
+        :param path: path to the file
+        :param bit_depth: bit depth of the sound file, must be one of 8, 16, 24 or 32
+        """
         match bit_depth:
             case 8:
                 subtype = "PCM_S8"
@@ -91,6 +99,13 @@ class Sound:
 
     @staticmethod
     def load(path: str | Path, sample_rate: int | None = None) -> "Sound":
+        """
+        Load a sound from a file.
+
+        :param path: path to the sound file
+        :param sample_rate: sample rate to resample the sound to, if None, use the original sample rate
+        :return: Sound object with the loaded sound
+        """
         assert sample_rate is None or sample_rate >= 0, "Sample rate must be positive"
 
         buffer, sr = librosa.load(path, sr=sample_rate, mono=False, dtype=np.float32)
@@ -100,3 +115,20 @@ class Sound:
             left, right = buffer[0], buffer[1]
 
         return Sound(left, right, int(sr), str(path))
+
+    def __len__(self) -> int:
+        """
+        Get the length of the sound in samples.
+
+        :return: length of the sound in samples
+        """
+        return max(len(self.left), len(self.right))
+
+    @property
+    def duration(self) -> float:
+        """
+        Get the duration of the sound in seconds.
+
+        :return: duration of the sound in seconds
+        """
+        return len(self) / self.sample_rate

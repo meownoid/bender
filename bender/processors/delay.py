@@ -2,10 +2,12 @@ import librosa.effects
 import numpy as np
 
 from bender.entity import entity
+from bender.modulation import Modulation
 from bender.parameter import (
     BoolParameter,
     FloatParameter,
     IntParameter,
+    ModulationParameter,
 )
 from bender.processor import OneToOneProcessor
 from bender.sound import Sound
@@ -45,11 +47,10 @@ from bender.sound import Sound
             clamp=True,
             description="Pitch shift amount",
         ),
-        "mix": FloatParameter(
-            default=0.5,
+        "mix": ModulationParameter(
+            default=Modulation(0.5),
             min_value=0.0,
             max_value=1.0,
-            clamp=True,
             description="Mix amount",
         ),
     },
@@ -62,14 +63,14 @@ class DelayProcessor(OneToOneProcessor):
         pingpong: bool,
         feedback: float,
         pitch: float,
-        mix: float,
+        mix: float | str | Modulation,
     ) -> None:
         self.lt = lt
         self.rt = rt
         self.pingpong = pingpong
         self.feedback = feedback
         self.pitch = pitch
-        self.mix = mix
+        self.mix = Modulation(mix)
 
     def _delay(self, signal: np.ndarray, sr: int, samples: int) -> np.ndarray:
         if samples == 0:
@@ -120,7 +121,10 @@ class DelayProcessor(OneToOneProcessor):
             result_right += delay_right
 
         # Mix the original and delayed signals
-        out_left = (1 - self.mix) * left + self.mix * result_left
-        out_right = (1 - self.mix) * right + self.mix * result_right
+        mix_left = self.mix.like(left, sr)
+        mix_right = self.mix.like(right, sr)
+
+        out_left = (1 - mix_left) * left + mix_left * result_left
+        out_right = (1 - mix_right) * right + mix_right * result_right
 
         return Sound(out_left, out_right, sr)

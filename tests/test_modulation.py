@@ -73,3 +73,14 @@ def test_invalid_array_inputs():
         mod(np.zeros((10, 10)))
     with pytest.raises(ValueError):
         mod.like(np.zeros((10, 10)))
+
+
+def test_fast_path_constant():
+    mod1 = Modulation(3.0)
+    assert mod1._constant == 3.0
+
+    mod2 = Modulation("3.0")
+    assert mod2._constant == 3.0
+
+    mod3 = Modulation("t")
+    assert mod3._constant is None

@@ -5,17 +5,17 @@ from typing import Protocol, runtime_checkable
 
 
 @runtime_checkable
-class Ordered(Protocol):
+class Ordered[T](Protocol):
     """An ABC which supports ordering."""
 
     __slots__ = ()
 
     @abstractmethod
-    def __lt__(self, other):
+    def __lt__(self, other: T, /) -> bool:
         pass
 
     @abstractmethod
-    def __gt__(self, other):
+    def __gt__(self, other: T, /) -> bool:
         pass
 
 

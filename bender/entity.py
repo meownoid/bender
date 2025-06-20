@@ -16,15 +16,20 @@ class Entity[T]:
     def get_usage(self) -> str:
         # Entity name in bold and bright green, description in white
         lines = [
-            f"{click.style(self.name, fg='bright_green', bold=True)}: "
-            f"{click.style(self.description, fg='white')}"
+            f"{click.style(self.name, fg='green', bold=True)}: "
+            f"{click.style(self.description, fg='white', bold=True)}"
         ]
 
         # Parameters in cyan with yellow parameter names
         for name, parameter in self.parameters.items():
-            param_name = click.style(name, fg="yellow")
-            param_usage = parameter.get_usage()
-            lines.append(f"  - {param_name}: {click.style(param_usage, fg='cyan')}")
+            name_colorized = click.style(name, fg="yellow")
+            description = parameter.description or "no description"
+            description_colorized = click.style(description, fg="cyan")
+            traits = ", ".join(parameter.traits)
+            traits_colorized = click.style(f"({traits})", fg="white")
+            lines.append(
+                f"  - {name_colorized}: {description_colorized} {traits_colorized}"
+            )
 
         return "\n".join(lines)
 

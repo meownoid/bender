@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 
 from bender.modulation import Modulation
@@ -11,22 +11,17 @@ class Parameter[T]:
     Base class for parameters, defines the interface for parsing and usage.
     """
 
+    kind = "str"
     description: str | None = None
     default: T | None = None
     required: bool = False
 
-    def get_usage(self) -> str:
-        result = self.description
-
-        if result is None:
-            result = self.__class__.__name__
-
-        if self.required:
-            result += " [required]"
-        elif self.default is not None:
-            result += f" [default: {self.default}]"
-
-        return result
+    @property
+    def traits(self) -> list[str]:
+        """
+        Returns a list of traits for the parameter.
+        """
+        return [self.kind]
 
     def parse(self, text: str) -> T:
         raise NotImplementedError(
@@ -50,7 +45,8 @@ class BoolParameter(Parameter[bool]):
     Boolean parameter, accepts true/false, yes/no, 1/0.
     """
 
-    default = False
+    kind = "bool"
+    default: bool | None = field(default=False)
 
     def parse(self, text: str) -> bool:
         text = text.strip().lower()
@@ -69,15 +65,15 @@ class ChoiceParameter(Parameter[str]):
     Choice parameter, accepts a list of values.
     """
 
+    kind = "choice"
     choices: list[str] | None = None
 
-    def get_usage(self) -> str:
-        result = super().get_usage()
+    @property
+    def traits(self) -> list[str]:
+        if self.choices is None:
+            return ["empty choice"]
 
-        if self.choices is not None:
-            result += f" [{', '.join(self.choices)}]"
-
-        return result
+        return [f"{', '.join(self.choices)}"]
 
     def parse(self, text: str) -> str:
         if self.choices is None:
@@ -102,16 +98,14 @@ class MinMaxParameter[T: Ordered](Parameter[T]):
     max_value: T | None = None
     clamp: bool = False
 
-    def get_usage(self) -> str:
-        result = super().get_usage()
-
+    @property
+    def traits(self) -> list[str]:
+        traits = super().traits.copy()
         if self.min_value is not None:
-            result += f" [min: {self.min_value}]"
-
+            traits.append(f"min: {self.min_value}")
         if self.max_value is not None:
-            result += f" [max: {self.max_value}]"
-
-        return result
+            traits.append(f"max: {self.max_value}")
+        return traits
 
     def _parse(self, text: str) -> T:
         raise NotImplementedError(
@@ -144,6 +138,8 @@ class IntParameter(MinMaxParameter[int]):
     Integer parameter, parses the input as an integer.
     """
 
+    kind = "int"
+
     def _parse(self, text: str) -> int:
         return int(text)
 
@@ -153,6 +149,8 @@ class FloatParameter(MinMaxParameter[float]):
     """
     Float parameter, parses the input as a float.
     """
+
+    kind = "float"
 
     def _parse(self, text: str) -> float:
         return float(text)
@@ -164,8 +162,18 @@ class ModulationParameter(Parameter[Modulation]):
     Modulation parameter, parses the input as a modulation expression.
     """
 
+    kind = "modulation"
     min_value: float | None = None
     max_value: float | None = None
+
+    @property
+    def traits(self) -> list[str]:
+        traits = super().traits.copy()
+        if self.min_value is not None:
+            traits.append(f"min: {self.min_value}")
+        if self.max_value is not None:
+            traits.append(f"max: {self.max_value}")
+        return traits
 
     def parse(self, text: str) -> Modulation:
         return Modulation(text, min_value=self.min_value, max_value=self.max_value)

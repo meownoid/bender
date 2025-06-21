@@ -77,10 +77,10 @@ def test_invalid_array_inputs():
 
 def test_fast_path_constant():
     mod1 = Modulation(3.0)
-    assert mod1._constant == 3.0
+    assert mod1.constant == 3.0
 
     mod2 = Modulation("3.0")
-    assert mod2._constant == 3.0
+    assert mod2.constant == 3.0
 
     mod3 = Modulation("t")
-    assert mod3._constant is None
+    assert mod3.constant is None

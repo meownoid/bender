@@ -14,6 +14,7 @@ from bender.sound import Sound
     description="Increase gain and add distortion to the sound",
     parameters={
         "gain": ModulationParameter(
+            default=Modulation(1.0),
             min_value=0.0,
             max_value=10.0,
             description="Gain factor",

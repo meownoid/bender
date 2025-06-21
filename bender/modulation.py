@@ -49,6 +49,10 @@ class Modulation:
         self._min_value: float | None = min_value
         self._max_value: float | None = max_value
 
+    @property
+    def constant(self) -> float | None:
+        return self._constant
+
     def __call__(self, t: np.ndarray) -> np.ndarray:
         """
         Evaluate the modulation expression at given time points.

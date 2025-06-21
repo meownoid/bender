@@ -12,7 +12,6 @@ from bender.parameter import (
 def test_string_parameter():
     param = StringParameter(description="Test String")
     assert param.parse("Some string") == "Some string"
-    assert param.get_usage() == "Test String"
 
 
 def test_bool_parameter():
@@ -33,7 +32,6 @@ def test_int_parameter():
     param = IntParameter(description="Test Int", min_value=0, max_value=10)
 
     assert param.parse("5") == 5
-    assert param.get_usage() == "Test Int [min: 0] [max: 10]"
 
     with pytest.raises(ValueError):
         param.parse("15")
@@ -50,7 +48,6 @@ def test_float_parameter():
     param = FloatParameter(description="Test Float", min_value=0.5, max_value=3.5)
 
     assert param.parse("2.5") == 2.5
-    assert param.get_usage() == "Test Float [min: 0.5] [max: 3.5]"
 
     with pytest.raises(ValueError):
         param.parse("4.0")

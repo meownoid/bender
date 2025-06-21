@@ -1,5 +1,6 @@
 import numpy as np
 
+from bender.modulation import Modulation
 from bender.processors.delay import DelayProcessor
 from bender.sound import Sound
 
@@ -203,3 +204,41 @@ def test_process_method():
     assert processed_sound.filename is not None
     assert processed_sound.filename != sound.filename
     assert "test_sound" in processed_sound.filename
+
+
+def test_delay_modulation():
+    sample_rate = 44100
+    signal_length = sample_rate * 2
+
+    left = np.zeros(signal_length)
+    right = np.zeros(signal_length)
+    left[0] = 1.0
+    right[0] = 1.0
+    left[sample_rate] = 1.0
+    right[sample_rate] = 1.0
+
+    sound = Sound(left, right, sample_rate)
+
+    delay_const = DelayProcessor(
+        lt=0.6,
+        rt=0.6,
+        pingpong=False,
+        feedback=0.0,
+        pitch=0,
+        mix=1.0,
+    )
+
+    delay_mod = DelayProcessor(
+        lt=Modulation(0.6),
+        rt=Modulation(0.6),
+        pingpong=False,
+        feedback=Modulation(0.0),
+        pitch=0,
+        mix=Modulation(1.0),
+    )
+
+    processed_const = delay_const._process(sound)
+    processed_mod = delay_mod._process(sound)
+
+    assert np.allclose(processed_const.left, processed_mod.left)
+    assert np.allclose(processed_const.right, processed_mod.right)

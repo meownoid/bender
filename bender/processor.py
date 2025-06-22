@@ -1,5 +1,5 @@
 from bender.sound import Sound
-from bender.utils import get_result_name
+from bender.utils import make_unique_output_path
 
 
 class Processor:
@@ -17,7 +17,7 @@ class OneToOneProcessor(Processor):
             if result.filename is None or result.filename == sound.filename:
                 filename = sound.filename if sound.filename is not None else "processed"
                 result = result.with_filename(
-                    get_result_name(
+                    make_unique_output_path(
                         filename,
                         ".wav",
                     )
@@ -42,7 +42,9 @@ class OneToManyProcessor(Processor):
                     filename = (
                         sound.filename if sound.filename is not None else "processed"
                     )
-                    result = result.with_filename(get_result_name(filename, ".wav", i))
+                    result = result.with_filename(
+                        make_unique_output_path(filename, ".wav", i)
+                    )
                 output.append(result)
 
         return output

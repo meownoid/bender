@@ -19,7 +19,15 @@ class Ordered[T](Protocol):
         pass
 
 
-def get_result_name(input_path: str, ext: str, n: int | None = None) -> str:
+def make_unique_output_path(input_path: str, ext: str, n: int | None = None) -> str:
+    """
+    Generate a unique output path based on the input path, extension, and an optional number.
+
+    :param input_path: The original input path.
+    :param ext: The file extension to use for the output path.
+    :param n: An optional number to append to the output path.
+    :return: A unique output path string.
+    """
     n_str = f"-{n}" if n is not None else ""
     random_suffix = f"-{secrets.token_hex(4)}"
     return f"{Path(input_path).stem}{n_str}{random_suffix}{ext}"

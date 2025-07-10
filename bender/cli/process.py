@@ -11,6 +11,7 @@ from bender.cli.utils import (
     is_sound_file,
     parameters_to_dict,
 )
+from bender.effects import brick_wall_limiter
 from bender.processor import Processor
 from bender.sound import Sound
 
@@ -49,6 +50,7 @@ def _process_command(
     bit_depth: int = 16,
     output: Path | None = None,
     force: bool = False,
+    limit: bool = True,
 ) -> Path:
     if parameters is None:
         parameters = []
@@ -102,6 +104,9 @@ def _process_command(
         # Change extension to .wav
         filename = f"{Path(filename).stem}.wav"
 
+        if limit:
+            result = result.process(brick_wall_limiter)
+
         click.echo(f"Saving {output_path}")
         result.save(output_path, bit_depth=bit_depth)
 
@@ -140,6 +145,13 @@ def _process_command(
 )
 @click.option(
     "-f", "--force", is_flag=True, default=False, help="Overwrite existing files."
+)
+@click.option(
+    "-l",
+    "--limit",
+    is_flag=True,
+    default=True,
+    help="Apply brick wall limiter to the result.",
 )
 @click.option(
     "--list",

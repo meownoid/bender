@@ -42,4 +42,4 @@ class DistortionProcessor(OneToOneProcessor):
     def _process(self, sound: Sound) -> Sound:
         fn = self.get_distortion(self.kind)
         gain = self.gain.like(sound)
-        return sound.process(lambda x: fn(x * gain))
+        return sound.process(lambda x, _: fn(x * gain))

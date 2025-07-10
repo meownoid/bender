@@ -51,14 +51,19 @@ class Sound:
             resample(self.left), resample(self.right), sample_rate, self.filename
         )
 
-    def process(self, fn: Callable[[np.ndarray], np.ndarray]) -> "Sound":
+    def process(self, fn: Callable[[np.ndarray, int], np.ndarray]) -> "Sound":
         """
         Apply a function to both channels.
 
         :param fn: function to apply to both channels
         :return: new Sound object with the processed channels
         """
-        return Sound(fn(self.left), fn(self.right), self.sample_rate, self.filename)
+        return Sound(
+            fn(self.left, self.sample_rate),
+            fn(self.right, self.sample_rate),
+            self.sample_rate,
+            self.filename,
+        )
 
     def with_filename(self, filename: str) -> "Sound":
         """

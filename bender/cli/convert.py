@@ -56,6 +56,13 @@ converter_shared_options = [
         help="Output sound file bit depth.",
     ),
     click.option(
+        "-r",
+        "--rotate",
+        is_flag=True,
+        default=False,
+        help="Rotate image 90 degrees clockwise before processing.",
+    ),
+    click.option(
         "-f", "--force", is_flag=True, default=False, help="Overwrite existing files."
     ),
 ]
@@ -98,6 +105,7 @@ def _image_to_sound(
     bit_depth: int,
     output: Path,
     force: bool,
+    rotate: bool = False,
 ) -> Path:
     if algorithm is None:
         algorithm = DEFAULT_ALGORITHM
@@ -108,6 +116,9 @@ def _image_to_sound(
         image = image.convert("RGB")
 
     image = ImageOps.exif_transpose(image)
+
+    if rotate:
+        image = image.rotate(-90, expand=True)
 
     if not hasattr(image, "filename") or not image.filename:
         image.filename = str(file)
@@ -122,6 +133,7 @@ def _image_to_sound(
         "version": 1,
         "algorithm": algorithm,
         "parameters": parameters,
+        "rotate": rotate,
         "metadata": result.metadata,
     }
 
@@ -192,6 +204,10 @@ def _sound_to_image(
     if image.mode != "RGB":
         image = image.convert("RGB")
 
+    was_rotated = metadata.get("rotate", False)
+    if was_rotated:
+        image = image.rotate(90, expand=True)
+
     click.echo(f"Saving {output}")
     image.save(output, quality=quality)
 
@@ -216,6 +232,7 @@ def _convert_command(
     bit_depth: int = 24,
     output: Path | None = None,
     force: bool = False,
+    rotate: bool = False,
 ) -> Path:
     if parameters is None:
         parameters = []
@@ -235,6 +252,7 @@ def _convert_command(
             bit_depth=bit_depth,
             output=output,
             force=force,
+            rotate=rotate,
         )
 
     if is_sound_file(file):
@@ -280,7 +298,7 @@ def _convert_command(
     default=1,
     help="Number of times to apply the conversion.",
 )
-def convert_command(files: Iterable[Path], n_times: bool = False, **kwargs) -> None:
+def convert_command(files: Iterable[Path], n_times: int = 1, **kwargs) -> None:
     for file in files:
         for _ in range(n_times):
             file = _convert_command(file, **kwargs)

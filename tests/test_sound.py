@@ -46,7 +46,7 @@ def test_process():
     sample_rate = 44100
 
     sound = Sound(left, right, sample_rate)
-    processed_sound = sound.process(np.negative)
+    processed_sound = sound.process(lambda x, _: np.negative(x))
 
     assert np.array_equal(processed_sound.left, -left)
     assert np.array_equal(processed_sound.right, -right)

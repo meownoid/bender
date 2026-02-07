@@ -59,13 +59,13 @@ def add_options(options):
 def is_image_file(name: Path | str) -> bool:
     name = Path(name)
 
-    return name.suffix in SUPPORTED_IMAGE_EXTENSIONS
+    return name.suffix.lower() in SUPPORTED_IMAGE_EXTENSIONS
 
 
 def is_sound_file(name: Path | str) -> bool:
     name = Path(name)
 
-    return name.suffix in SUPPORTED_SOUND_EXTENSIONS
+    return name.suffix.lower() in SUPPORTED_SOUND_EXTENSIONS
 
 
 def parameters_to_dict(parameters: list[tuple[str, str]]) -> dict[str, str]:

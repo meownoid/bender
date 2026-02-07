@@ -123,7 +123,7 @@ def _process_command(
     "parameters",
     type=(str, str),
     multiple=True,
-    help="Algorithm parameters.",
+    help="Algorithm parameters (repeatable). Use -p key value or -p key=value.",
     shell_complete=autocomplete,
 )
 @click.option(

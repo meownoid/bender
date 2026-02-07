@@ -34,6 +34,14 @@ Specify the output file name:
 bender convert image.jpg -o image.wav
 ```
 
+When converting multiple files or using `--n-times`, `--output` must be a directory (it will be created if it does not exist).
+
+Write the metadata JSON to a specific location:
+
+```bash
+bender convert image.jpg --metadata-out ./metadata
+```
+
 ### Convert processed sound back to an image
 
 ```bash
@@ -41,6 +49,12 @@ bender convert image-xxxx-processed.wav
 ```
 
 The corresponding `.json` file with the longest matching prefix is selected automatically.
+
+Use an explicit metadata file instead of auto-detection:
+
+```bash
+bender convert image-xxxx-processed.wav --metadata image-xxxx.json
+```
 
 ### List available algorithms and parameters
 
@@ -54,9 +68,31 @@ bender convert --list
 bender convert -a bmp -p sample_size 1 image.jpg
 ```
 
-### Monitor and convert matching sound files
+You can also pass parameters as `key=value`:
 
-When experimenting, it might be useful to automatically convert new sound files back to images.
+```bash
+bender convert -a bmp -p sample_size=1 image.jpg
+```
+
+### Edit images
+
+```bash
+bender edit -a split_channels input.jpg
+```
+
+When multiple images are provided, the editor receives all inputs and produces a single output file.
+
+### Process sounds
+
+```bash
+bender process -a delay input.wav
+```
+
+When multiple sounds are provided, the processor receives all inputs and produces a single output file.
+
+### Monitor and convert matching files
+
+When experimenting, it might be useful to automatically convert new files as they appear.
 
 ```bash
 bender monitor 'image-*.wav'

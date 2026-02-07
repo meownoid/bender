@@ -34,17 +34,15 @@ class WatchdogEventHandler(PatternMatchingEventHandler):
         self.callback(src_path)
 
 
-@click.command(
-    "monitor", help="Automatically convert sound files with a given pattern."
-)
+@click.command("monitor", help="Automatically convert matching image or sound files.")
 @click.argument("patterns", nargs=-1)
 @add_options(converter_shared_options)
 @click.option(
-    "-r",
+    "-R",
     "--recursive",
     is_flag=True,
     default=False,
-    help="Automatically open converted files.",
+    help="Watch subdirectories.",
 )
 @click.option(
     "-o",

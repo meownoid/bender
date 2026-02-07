@@ -38,7 +38,7 @@ converter_shared_options = [
         "parameters",
         type=(str, str),
         multiple=True,
-        help="Algorithm parameters.",
+        help="Algorithm parameters (repeatable). Use -p key value or -p key=value.",
         shell_complete=autocomplete,
     ),
     click.option(
@@ -46,14 +46,14 @@ converter_shared_options = [
         "--quality",
         type=click.IntRange(0, 100, clamp=True),
         default=95,
-        help="Output image quality.",
+        help="Output image quality (sound -> image only).",
     ),
     click.option(
         "-b",
         "--bit-depth",
         type=MappedChoice({"8": 8, "16": 16, "24": 24, "32": 32}),
         default="16",
-        help="Output sound file bit depth.",
+        help="Output sound file bit depth (image -> sound only).",
     ),
     click.option(
         "-r",
@@ -68,11 +68,31 @@ converter_shared_options = [
 ]
 
 
+def _is_dir_path(path: Path) -> bool:
+    if path.exists():
+        return path.is_dir()
+
+    return path.suffix == ""
+
+
+def _ensure_dir(path: Path, option_name: str) -> Path:
+    if path.exists():
+        if not path.is_dir():
+            raise click.UsageError(f"{option_name} must be a directory")
+        return path
+
+    if path.suffix:
+        raise click.UsageError(f"{option_name} must be a directory")
+
+    path.mkdir(parents=True, exist_ok=True)
+    return path
+
+
 def _find_metadata_file(path: Path) -> Path | None:
     candidates = []
 
     for candidate in path.parent.iterdir():
-        if path.name.startswith(candidate.stem) and candidate.suffix == ".json":
+        if path.name.startswith(candidate.stem) and candidate.suffix.lower() == ".json":
             candidates.append(candidate)
 
     if not candidates:
@@ -106,6 +126,7 @@ def _image_to_sound(
     output: Path,
     force: bool,
     rotate: bool = False,
+    metadata_out: Path | None = None,
 ) -> Path:
     if algorithm is None:
         algorithm = DEFAULT_ALGORITHM
@@ -146,10 +167,17 @@ def _image_to_sound(
 
     if output.is_dir():
         sound_path = output / f"{stem}-{unique_id}.wav"
-        metadata_path = output / f"{stem}-{unique_id}.json"
     else:
         sound_path = output
-        metadata_path = output.with_suffix(".json")
+
+    if metadata_out is None:
+        metadata_path = sound_path.with_suffix(".json")
+    else:
+        if _is_dir_path(metadata_out):
+            metadata_out.mkdir(parents=True, exist_ok=True)
+            metadata_path = metadata_out / sound_path.with_suffix(".json").name
+        else:
+            metadata_path = metadata_out
 
     if not force:
         if sound_path.exists():
@@ -176,6 +204,7 @@ def _sound_to_image(
     quality: int,
     output: Path,
     force: bool,
+    metadata: Path | None = None,
 ) -> Path:
     if output.is_dir():
         output = output / file.with_suffix(".jpg").name
@@ -183,30 +212,34 @@ def _sound_to_image(
     if not force and output.exists():
         raise click.UsageError(f"{output} already exists, use -f to overwrite")
 
-    if (metadata_path := _find_metadata_file(file)) is None:
+    metadata_path = metadata or _find_metadata_file(file)
+    if metadata_path is None:
         raise click.UsageError(
-            f"no metadata file for {file}, make sure it is in the same directory and has the same prefix"
+            f"no metadata file for {file}, use --metadata or place it in the same directory with the same prefix"
         )
 
-    click.echo(f"Found metadata at {metadata_path}")
+    if metadata:
+        click.echo(f"Using metadata at {metadata_path}")
+    else:
+        click.echo(f"Found metadata at {metadata_path}")
 
     sound = Sound.load(file)
-    metadata = json.loads(metadata_path.read_text())
+    metadata_data = json.loads(metadata_path.read_text())
 
     if algorithm is None:
-        if "algorithm" not in metadata:
+        if "algorithm" not in metadata_data:
             raise click.UsageError(
                 f"no algorithm specified and no metadata found in {metadata_path}"
             )
-        algorithm = metadata["algorithm"]
+        algorithm = metadata_data["algorithm"]
 
     if not algorithm:
         raise click.UsageError("no algorithm specified")
 
-    parameters = {**metadata.get("parameters", {}), **parameters}
+    parameters = {**metadata_data.get("parameters", {}), **parameters}
 
     converter = _build_converter(algorithm, parameters)
-    image = converter.decode(ConvertedImage(sound, metadata.get("metadata", {})))
+    image = converter.decode(ConvertedImage(sound, metadata_data.get("metadata", {})))
 
     if not isinstance(image, Image.Image):
         raise click.UsageError(f"converter returned invalid result: {image}")
@@ -214,7 +247,7 @@ def _sound_to_image(
     if image.mode != "RGB":
         image = image.convert("RGB")
 
-    was_rotated = metadata.get("rotate", False)
+    was_rotated = metadata_data.get("rotate", False)
     if was_rotated:
         image = image.rotate(90, expand=True)
 
@@ -243,6 +276,8 @@ def _convert_command(
     output: Path | None = None,
     force: bool = False,
     rotate: bool = False,
+    metadata: Path | None = None,
+    metadata_out: Path | None = None,
 ) -> Path:
     if parameters is None:
         parameters = []
@@ -263,6 +298,7 @@ def _convert_command(
             output=output,
             force=force,
             rotate=rotate,
+            metadata_out=metadata_out,
         )
 
     if is_sound_file(file):
@@ -273,6 +309,7 @@ def _convert_command(
             quality=quality,
             output=output,
             force=force,
+            metadata=metadata,
         )
 
     raise click.UsageError(
@@ -298,7 +335,19 @@ def _convert_command(
     "-o",
     "--output",
     type=click.Path(file_okay=True, dir_okay=True, writable=True, path_type=Path),
-    help="Output file name.",
+    help="Output file or directory.",
+    default=None,
+)
+@click.option(
+    "--metadata",
+    type=click.Path(exists=True, dir_okay=False, readable=True, path_type=Path),
+    help="Metadata JSON file to use for sound -> image conversion.",
+    default=None,
+)
+@click.option(
+    "--metadata-out",
+    type=click.Path(file_okay=True, dir_okay=True, writable=True, path_type=Path),
+    help="Metadata JSON output path for image -> sound conversion.",
     default=None,
 )
 @click.option(
@@ -309,6 +358,45 @@ def _convert_command(
     help="Number of times to apply the conversion.",
 )
 def convert_command(files: Iterable[Path], n_times: int = 1, **kwargs) -> None:
-    for file in files:
+    files_list = list(files)
+
+    output = kwargs.get("output")
+    metadata = kwargs.get("metadata")
+    metadata_out = kwargs.get("metadata_out")
+
+    multi = len(files_list) > 1 or n_times > 1
+
+    if output is not None and multi:
+        kwargs["output"] = _ensure_dir(output, "--output")
+
+    if metadata is not None:
+        if len(files_list) != 1:
+            raise click.UsageError(
+                "--metadata can only be used with a single sound file"
+            )
+        if n_times != 1:
+            raise click.UsageError("--metadata cannot be used with --n-times")
+        if any(not is_sound_file(f) for f in files_list):
+            raise click.UsageError(
+                "--metadata can only be used when converting sound to image"
+            )
+
+    if metadata_out is not None:
+        if any(not is_image_file(f) for f in files_list):
+            raise click.UsageError(
+                "--metadata-out can only be used when converting image to sound"
+            )
+
+        if multi and not _is_dir_path(metadata_out):
+            raise click.UsageError(
+                "--metadata-out must be a directory when converting multiple files or using --n-times"
+            )
+
+        if multi:
+            kwargs["metadata_out"] = _ensure_dir(metadata_out, "--metadata-out")
+        elif not metadata_out.exists() and metadata_out.suffix == "":
+            metadata_out.mkdir(parents=True, exist_ok=True)
+
+    for file in files_list:
         for _ in range(n_times):
             file = _convert_command(file, **kwargs)

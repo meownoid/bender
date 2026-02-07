@@ -17,21 +17,27 @@ AUTOCOMPLETE = {
         ],
     },
     "edit": {
-        "palette_dither": [
+        "blur-c": [
+            "radius",
+        ],
+        "blur-g": [
+            "radius",
+        ],
+        "dither": [
             "palette",
         ],
         "extract_channel": [
-            "mode",
             "channel",
+            "mode",
         ],
     },
     "process": {
         "delay": [
-            "pingpong",
-            "pitch",
             "feedback",
-            "rt",
             "mix",
+            "rt",
+            "pitch",
+            "pingpong",
             "lt",
         ],
         "distortion": [

@@ -3,13 +3,13 @@
 AUTOCOMPLETE = {
     "convert": {
         "array": [
-            "order",
             "average",
+            "order",
         ],
         "bmp": [
-            "sample_size",
             "header_size",
             "average",
+            "sample_size",
         ],
         "qam": [
             "carrier_frequency",
@@ -17,18 +17,21 @@ AUTOCOMPLETE = {
         ],
     },
     "edit": {
+        "palette_dither": [
+            "palette",
+        ],
         "extract_channel": [
-            "channel",
             "mode",
+            "channel",
         ],
     },
     "process": {
         "delay": [
-            "rt",
-            "pitch",
-            "mix",
             "pingpong",
+            "pitch",
             "feedback",
+            "rt",
+            "mix",
             "lt",
         ],
         "distortion": [

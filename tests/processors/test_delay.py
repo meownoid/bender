@@ -37,9 +37,7 @@ def test_delay_with_single_impulse():
 
     # Check that the impulse appears at the delay position
     assert np.isclose(processed.left[0], 0.0)  # Original is removed due to mix=1.0
-    assert np.isclose(
-        processed.left[delay_samples], 1.0
-    )  # Delayed impulse appears here
+    assert np.isclose(processed.left[delay_samples], 1.0)  # Delayed impulse appears here
     assert np.sum(processed.left) == 1.0  # No other impulses should be present
 
     assert np.isclose(processed.right[0], 0.0)
@@ -191,9 +189,7 @@ def test_process_method():
 
     sound = Sound(left, right, sample_rate, "test_sound")
 
-    processor = DelayProcessor(
-        lt=0.5, rt=0.5, pingpong=False, feedback=0.0, pitch=0, mix=0.5
-    )
+    processor = DelayProcessor(lt=0.5, rt=0.5, pingpong=False, feedback=0.0, pitch=0, mix=0.5)
     processed_sound = processor.process([sound])
 
     assert isinstance(processed_sound, Sound)

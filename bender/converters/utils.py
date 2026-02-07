@@ -16,9 +16,7 @@ def pad_reshape(data: np.ndarray, shape: tuple[int, ...]) -> np.ndarray:
     return data.reshape(shape)
 
 
-def lowpass(
-    data: np.ndarray, cutoff: float, sampling_rate: float, order: int = 6
-) -> np.ndarray:
+def lowpass(data: np.ndarray, cutoff: float, sampling_rate: float, order: int = 6) -> np.ndarray:
     normal_cutoff = 2 * cutoff / sampling_rate
     sos = butter(order, normal_cutoff, btype="low", output="sos", analog=False)
     return sosfiltfilt(sos, data)

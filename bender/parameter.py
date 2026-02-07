@@ -24,9 +24,7 @@ class Parameter[T]:
         return [self.kind]
 
     def parse(self, text: str) -> T:
-        raise NotImplementedError(
-            f"parse is not implemented in {self.__class__.__name__}"
-        )
+        raise NotImplementedError(f"parse is not implemented in {self.__class__.__name__}")
 
 
 @dataclass(frozen=True)
@@ -108,9 +106,7 @@ class MinMaxParameter[T: Ordered](Parameter[T]):
         return traits
 
     def _parse(self, text: str) -> T:
-        raise NotImplementedError(
-            f"_parse is not implemented in {self.__class__.__name__}"
-        )
+        raise NotImplementedError(f"_parse is not implemented in {self.__class__.__name__}")
 
     def parse(self, text: str) -> T:
         value = self._parse(text)
@@ -125,9 +121,7 @@ class MinMaxParameter[T: Ordered](Parameter[T]):
             if self.clamp:
                 value = self.max_value
             else:
-                raise ValueError(
-                    f"value {value} is greater than maximum {self.max_value}"
-                )
+                raise ValueError(f"value {value} is greater than maximum {self.max_value}")
 
         return value
 
@@ -179,9 +173,7 @@ class ModulationParameter(Parameter[Modulation]):
         return Modulation(text, min_value=self.min_value, max_value=self.max_value)
 
 
-def build_parameters(
-    prototypes: dict[str, Parameter], values: dict[str, str]
-) -> dict[str, Any]:
+def build_parameters(prototypes: dict[str, Parameter], values: dict[str, str]) -> dict[str, Any]:
     for key in values:
         if key not in prototypes:
             raise ValueError(f"unknown parameter {key}")

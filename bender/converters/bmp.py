@@ -39,9 +39,7 @@ DTYPES: dict[int, np.dtype] = {
     },
 )
 class BMPConverter(Converter):
-    def __init__(
-        self, header_size: int = 54, sample_size: int = 1, average: bool = False
-    ) -> None:
+    def __init__(self, header_size: int = 54, sample_size: int = 1, average: bool = False) -> None:
         super().__init__()
 
         self.header_size = header_size

@@ -135,9 +135,7 @@ def _edit_command(
     default=95,
     help="Output image quality.",
 )
-@click.option(
-    "-f", "--force", is_flag=True, default=False, help="Overwrite existing files."
-)
+@click.option("-f", "--force", is_flag=True, default=False, help="Overwrite existing files.")
 @click.option(
     "--list",
     is_flag=True,

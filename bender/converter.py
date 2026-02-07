@@ -14,11 +14,7 @@ class ConvertedImage:
 
 class Converter:
     def encode(self, image: Image.Image) -> ConvertedImage:
-        raise NotImplementedError(
-            f"encode is not implemented in {self.__class__.__name__}"
-        )
+        raise NotImplementedError(f"encode is not implemented in {self.__class__.__name__}")
 
     def decode(self, converted_image: ConvertedImage) -> Image.Image:
-        raise NotImplementedError(
-            f"decode is not implemented in {self.__class__.__name__}"
-        )
+        raise NotImplementedError(f"decode is not implemented in {self.__class__.__name__}")

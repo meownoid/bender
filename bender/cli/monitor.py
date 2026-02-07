@@ -17,9 +17,7 @@ from bender.utils import bytes_to_str
 
 class WatchdogEventHandler(PatternMatchingEventHandler):
     def __init__(self, patterns: list[str], callback: Callable[[str], None]):
-        super().__init__(
-            patterns=patterns, ignore_directories=True, case_sensitive=False
-        )
+        super().__init__(patterns=patterns, ignore_directories=True, case_sensitive=False)
         self.callback = callback
 
     def on_modified(self, event: DirModifiedEvent | FileModifiedEvent) -> None:

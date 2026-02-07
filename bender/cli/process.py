@@ -134,9 +134,7 @@ def _process_command(
     help="Output bit depth.",
     callback=lambda _, __, v: int(v) if v else 16,
 )
-@click.option(
-    "-f", "--force", is_flag=True, default=False, help="Overwrite existing files."
-)
+@click.option("-f", "--force", is_flag=True, default=False, help="Overwrite existing files.")
 @click.option(
     "-l",
     "--limit",

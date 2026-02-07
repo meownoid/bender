@@ -37,9 +37,7 @@ def test_int_parameter():
         param.parse("15")
 
     # Test clamping
-    param_clamp = IntParameter(
-        description="Test Int", min_value=0, max_value=10, clamp=True
-    )
+    param_clamp = IntParameter(description="Test Int", min_value=0, max_value=10, clamp=True)
     assert param_clamp.parse("15") == 10
     assert param_clamp.parse("-5") == 0
 
@@ -53,9 +51,7 @@ def test_float_parameter():
         param.parse("4.0")
 
     # Test clamping
-    param_clamp = FloatParameter(
-        description="Test Float", min_value=0.5, max_value=3.5, clamp=True
-    )
+    param_clamp = FloatParameter(description="Test Float", min_value=0.5, max_value=3.5, clamp=True)
     assert param_clamp.parse("4.0") == 3.5
     assert param_clamp.parse("0.1") == 0.5
 

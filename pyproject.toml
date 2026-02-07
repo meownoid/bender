@@ -26,6 +26,9 @@ bender = "bender:__main__.main"
 [tool.mypy]
 plugins = "numpy.typing.mypy_plugin"
 
+[tool.ruff]
+line-length = 100
+
 [tool.pytest.ini_options]
 filterwarnings = [
     "ignore::DeprecationWarning"

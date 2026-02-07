@@ -39,9 +39,7 @@ class QAMConverter(Converter):
         super().__init__()
 
         if carrier_frequency >= sample_rate / 2:
-            raise ValueError(
-                "Carrier frequency must be less than half of the sample rate"
-            )
+            raise ValueError("Carrier frequency must be less than half of the sample rate")
 
         self.carrier_frequency = carrier_frequency
         self.sample_rate = sample_rate

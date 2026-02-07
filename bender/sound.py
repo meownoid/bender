@@ -47,9 +47,7 @@ class Sound:
             res_type="soxr_vhq",
         )
 
-        return Sound(
-            resample(self.left), resample(self.right), sample_rate, self.filename
-        )
+        return Sound(resample(self.left), resample(self.right), sample_rate, self.filename)
 
     def process(self, fn: Callable[[np.ndarray, int], np.ndarray]) -> "Sound":
         """
@@ -91,9 +89,7 @@ class Sound:
             case 32:
                 subtype = "PCM_32"
             case _:
-                raise ValueError(
-                    f"Unsupported bit depth: {bit_depth}, expected 8, 16, 24 or 32"
-                )
+                raise ValueError(f"Unsupported bit depth: {bit_depth}, expected 8, 16, 24 or 32")
 
         soundfile.write(
             path,

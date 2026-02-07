@@ -97,9 +97,7 @@ class DelayProcessor(OneToOneProcessor):
 
         return delayed_signal
 
-    def _delay(
-        self, signal: np.ndarray, delay_seconds: Modulation, sr: int
-    ) -> np.ndarray:
+    def _delay(self, signal: np.ndarray, delay_seconds: Modulation, sr: int) -> np.ndarray:
         if (constant_delay := delay_seconds.constant) is not None:
             delayed_signal = self._constant_delay(signal, int(constant_delay * sr))
         else:

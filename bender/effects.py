@@ -62,9 +62,7 @@ def brick_wall_limit(
         release_states[0] += (smoothed_gain[i] - release_states[0]) * release_slew
         release_states[0] = min(release_states[0], smoothed_gain[i])
         for j in range(1, n_releases):
-            release_states[j] += (
-                release_states[j - 1] - release_states[j]
-            ) * release_slew
+            release_states[j] += (release_states[j - 1] - release_states[j]) * release_slew
             release_states[j] = min(release_states[j], smoothed_gain[i])
         release_gain[i] = release_states[-1]
 

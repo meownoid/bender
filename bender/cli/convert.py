@@ -62,9 +62,7 @@ converter_shared_options = [
         default=False,
         help="Rotate image 90 degrees clockwise before processing.",
     ),
-    click.option(
-        "-f", "--force", is_flag=True, default=False, help="Overwrite existing files."
-    ),
+    click.option("-f", "--force", is_flag=True, default=False, help="Overwrite existing files."),
 ]
 
 
@@ -184,9 +182,7 @@ def _image_to_sound(
             raise click.UsageError(f"{sound_path} already exists, use -f to overwrite")
 
         if metadata_path.exists():
-            raise click.UsageError(
-                f"{metadata_path} already exists, use -f to overwrite"
-            )
+            raise click.UsageError(f"{metadata_path} already exists, use -f to overwrite")
 
     click.echo(f"Saving {sound_path}")
     result.sound.resample(48000).save(sound_path, bit_depth=bit_depth)
@@ -371,21 +367,15 @@ def convert_command(files: Iterable[Path], n_times: int = 1, **kwargs) -> None:
 
     if metadata is not None:
         if len(files_list) != 1:
-            raise click.UsageError(
-                "--metadata can only be used with a single sound file"
-            )
+            raise click.UsageError("--metadata can only be used with a single sound file")
         if n_times != 1:
             raise click.UsageError("--metadata cannot be used with --n-times")
         if any(not is_sound_file(f) for f in files_list):
-            raise click.UsageError(
-                "--metadata can only be used when converting sound to image"
-            )
+            raise click.UsageError("--metadata can only be used when converting sound to image")
 
     if metadata_out is not None:
         if any(not is_image_file(f) for f in files_list):
-            raise click.UsageError(
-                "--metadata-out can only be used when converting image to sound"
-            )
+            raise click.UsageError("--metadata-out can only be used when converting image to sound")
 
         if multi and not _is_dir_path(metadata_out):
             raise click.UsageError(

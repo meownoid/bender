@@ -56,13 +56,9 @@ def print_dict(xs, indent=0):
 
 
 def main():
-    convert_algorithms = generate_autocomplete(
-        import_entities(Converter, "bender.converters")
-    )
+    convert_algorithms = generate_autocomplete(import_entities(Converter, "bender.converters"))
     edit_algorithms = generate_autocomplete(import_entities(Editor, "bender.editors"))
-    process_algorithms = generate_autocomplete(
-        import_entities(Processor, "bender.processors")
-    )
+    process_algorithms = generate_autocomplete(import_entities(Processor, "bender.processors"))
 
     output_path = os.path.join("bender", "cli", "autocomplete_data.py")
     with open(output_path, "w") as f:

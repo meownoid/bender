@@ -3,33 +3,33 @@
 AUTOCOMPLETE = {
     "convert": {
         "array": [
-            "average",
             "order",
+            "average",
         ],
         "bmp": [
-            "average",
-            "header_size",
             "sample_size",
+            "header_size",
+            "average",
         ],
         "qam": [
-            "sample_rate",
             "carrier_frequency",
+            "sample_rate",
         ],
     },
     "edit": {
-        "split_channels": [
-            "mode",
+        "extract_channel": [
             "channel",
+            "mode",
         ],
     },
     "process": {
         "delay": [
-            "pitch",
             "rt",
-            "feedback",
-            "pingpong",
-            "lt",
+            "pitch",
             "mix",
+            "pingpong",
+            "feedback",
+            "lt",
         ],
         "distortion": [
             "gain",

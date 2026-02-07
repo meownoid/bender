@@ -1,4 +1,4 @@
-# Copilot Coding Agent: Onboarding Instructions for this Repo
+# Coding Agent: Onboarding Instructions for this Repo
 
 Welcome! This guide gives you the minimum you need to build, test, lint, and ship changes reliably in this repository.
 

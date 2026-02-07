@@ -8,9 +8,12 @@ from PIL import Image, ImageOps
 
 from bender.cli.autocomplete import autocomplete
 from bender.cli.utils import (
+    DEFAULT_OUTPUT_IMAGE_FORMAT,
+    OUTPUT_IMAGE_FORMATS,
     SUPPORTED_EXTENSIONS,
     MappedChoice,
     add_options,
+    apply_image_output_format,
     import_entities,
     is_image_file,
     is_sound_file,
@@ -46,7 +49,7 @@ converter_shared_options = [
         "--quality",
         type=click.IntRange(0, 100, clamp=True),
         default=95,
-        help="Output image quality (sound -> image only).",
+        help="Output image quality (jpeg only; sound -> image only).",
     ),
     click.option(
         "-b",
@@ -200,10 +203,14 @@ def _sound_to_image(
     quality: int,
     output: Path,
     force: bool,
+    output_format: str | None = None,
     metadata: Path | None = None,
 ) -> Path:
     if output.is_dir():
-        output = output / file.with_suffix(".jpg").name
+        ext = OUTPUT_IMAGE_FORMATS[output_format or DEFAULT_OUTPUT_IMAGE_FORMAT][0]
+        output = output / file.with_suffix(ext).name
+    else:
+        output = apply_image_output_format(output, output_format)
 
     if not force and output.exists():
         raise click.UsageError(f"{output} already exists, use -f to overwrite")
@@ -272,6 +279,7 @@ def _convert_command(
     output: Path | None = None,
     force: bool = False,
     rotate: bool = False,
+    output_format: str | None = None,
     metadata: Path | None = None,
     metadata_out: Path | None = None,
 ) -> Path:
@@ -305,6 +313,7 @@ def _convert_command(
             quality=quality,
             output=output,
             force=force,
+            output_format=output_format,
             metadata=metadata,
         )
 
@@ -319,6 +328,13 @@ def _convert_command(
 )
 @click.argument("files", type=click.Path(exists=True, path_type=Path), nargs=-1)
 @add_options(converter_shared_options)
+@click.option(
+    "--format",
+    "output_format",
+    type=click.Choice(list(OUTPUT_IMAGE_FORMATS), case_sensitive=False),
+    default=None,
+    help="Output image format (sound -> image only).",
+)
 @click.option(
     "--list",
     is_flag=True,

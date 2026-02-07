@@ -23,6 +23,15 @@ SUPPORTED_SOUND_EXTENSIONS = [".wav", ".aiff", ".aif"]
 
 SUPPORTED_EXTENSIONS = SUPPORTED_IMAGE_EXTENSIONS + SUPPORTED_SOUND_EXTENSIONS
 
+OUTPUT_IMAGE_FORMATS = {
+    "jpeg": (".jpg", (".jpg", ".jpeg")),
+    "tiff": (".tiff", (".tiff", ".tif")),
+    "png": (".png", (".png",)),
+    "bmp": (".bmp", (".bmp",)),
+}
+
+DEFAULT_OUTPUT_IMAGE_FORMAT = "jpeg"
+
 
 class MappedChoice(click.Choice):
     def __init__(self, mapping: dict[str, Any], *args, **kwargs):
@@ -77,6 +86,20 @@ def parameters_to_dict(parameters: list[tuple[str, str]]) -> dict[str, str]:
         result[key] = value
 
     return result
+
+
+def apply_image_output_format(output: Path, output_format: str | None) -> Path:
+    if output_format is None:
+        return output
+
+    default_ext, allowed_exts = OUTPUT_IMAGE_FORMATS[output_format]
+    if output.suffix:
+        if output.suffix.lower() not in allowed_exts:
+            allowed_list = ", ".join(allowed_exts)
+            raise click.UsageError(f"--format {output_format} expects {allowed_list} extension")
+        return output
+
+    return output.with_suffix(default_ext)
 
 
 def _import(name):

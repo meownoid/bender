@@ -7,6 +7,9 @@ from PIL import Image, ImageOps
 
 from bender.cli.autocomplete import autocomplete
 from bender.cli.utils import (
+    DEFAULT_OUTPUT_IMAGE_FORMAT,
+    OUTPUT_IMAGE_FORMATS,
+    apply_image_output_format,
     import_entities,
     is_image_file,
     parameters_to_dict,
@@ -48,6 +51,7 @@ def _edit_command(
     quality: int = 95,
     output: Path | None = None,
     force: bool = False,
+    output_format: str | None = None,
 ) -> Path:
     if parameters is None:
         parameters = []
@@ -85,14 +89,15 @@ def _edit_command(
 
     # Determine output path
     first_input = files[0]
-    default_name = f"{first_input.stem}-processed-{secrets.token_hex(4)}.jpg"
+    default_ext = OUTPUT_IMAGE_FORMATS[output_format or DEFAULT_OUTPUT_IMAGE_FORMAT][0]
+    default_name = f"{first_input.stem}-processed-{secrets.token_hex(4)}{default_ext}"
 
     if output is None:
         output_path = Path.cwd() / default_name
     elif output.is_dir():
         output_path = output / default_name
     else:
-        output_path = output
+        output_path = apply_image_output_format(output, output_format)
 
     if result.mode != "RGB":
         result = result.convert("RGB")
@@ -133,7 +138,14 @@ def _edit_command(
     "--quality",
     type=click.IntRange(0, 100, clamp=True),
     default=95,
-    help="Output image quality.",
+    help="Output image quality (jpeg only).",
+)
+@click.option(
+    "--format",
+    "output_format",
+    type=click.Choice(list(OUTPUT_IMAGE_FORMATS), case_sensitive=False),
+    default=None,
+    help="Output image format.",
 )
 @click.option("-f", "--force", is_flag=True, default=False, help="Overwrite existing files.")
 @click.option(

@@ -7,8 +7,8 @@ AUTOCOMPLETE = {
             "order",
         ],
         "bmp": [
-            "header_size",
             "average",
+            "header_size",
             "sample_size",
         ],
         "qam": [
@@ -34,11 +34,11 @@ AUTOCOMPLETE = {
     "process": {
         "delay": [
             "feedback",
-            "mix",
-            "rt",
-            "pitch",
-            "pingpong",
             "lt",
+            "mix",
+            "pingpong",
+            "pitch",
+            "rt",
         ],
         "distortion": [
             "gain",

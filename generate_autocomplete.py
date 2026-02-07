@@ -14,7 +14,7 @@ def generate_autocomplete(entities):
         for parameter_name, _ in entity.parameters.items():
             parameters.add(parameter_name)
 
-        algorithms[name] = list(parameters)
+        algorithms[name] = sorted(parameters)
 
     return algorithms
 
@@ -26,7 +26,7 @@ def print_list(xs, indent=0):
         output.append(line)
 
     write("[\n")
-    for x in xs:
+    for x in sorted(xs):
         write(" " * (indent + 4) + f'"{x}",\n')
     write(" " * indent + "]")
     return "".join(output)
@@ -39,7 +39,8 @@ def print_dict(xs, indent=0):
         output.append(line)
 
     write("{\n")
-    for key, value in xs.items():
+    for key in sorted(xs):
+        value = xs[key]
         write(" " * (indent + 4) + f'"{key}": ')
         if isinstance(value, list):
             write(print_list(value, indent + 4))

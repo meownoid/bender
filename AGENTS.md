@@ -9,9 +9,9 @@ Welcome! This guide gives you the minimum you need to build, test, lint, and shi
 - Size: Small Python library + CLI, ~100 files, tests included. No compiled extensions.
 
 ## Project layout and key files
-- Root files: `pyproject.toml` (deps, test config, CLI entry), `uv.lock` (locked deps), `.pre-commit-config.yaml` (lint/type), `README.md` (usage), `generate_autocomplete.py` (rebuild CLI completion data), `.gitignore`.
+- Root files: `pyproject.toml` (deps, test config, CLI entry), `uv.lock` (locked deps), `.pre-commit-config.yaml` (lint/type), `.python-version` (Python 3.12), `README.md` (usage), `generate_autocomplete.py` (rebuild CLI completion data), `.gitignore`.
 - Library code: `bender/`
-  - `__main__.py` (click group/entry), `converter.py`, `editor.py`, `processor.py`, `parameter.py`, `modulation.py`, `sound.py`, `utils.py`, `entity.py`.
+  - `__main__.py` (click group/entry), `converter.py`, `editor.py`, `processor.py`, `parameter.py`, `modulation.py`, `effects.py`, `sound.py`, `utils.py`, `entity.py`.
   - Algorithms live under subpackages:
     - Converters: `bender/converters/`.
     - Editors: `bender/editors/`.
@@ -26,7 +26,8 @@ Welcome! This guide gives you the minimum you need to build, test, lint, and shi
 - Linters/formatters/types: ruff (lint+format), mypy (type-check; numpy plugin), all driven by pre-commit.
 
 ## Preconditions and tips
-- If you add new CLI algorithms, regenerate autocomplete: `uv run python generate_autocomplete.py` (updates `bender/cli/autocomplete_data.py`). Commit the generated file.
+- If you add new CLI algorithms or parameter shapes, regenerate autocomplete: `uv run python generate_autocomplete.py` (updates `bender/cli/autocomplete_data.py`). Commit the generated file.
+- Do not edit `bender/cli/autocomplete_data.py` by hand; it is generated.
 - Pillow may warn about truncated images; this is handled (see converters like BMP using `ImageFile.LOAD_TRUNCATED_IMAGES = True`).
 - librosa/soundfile read/write require valid audio file paths; tests use temp files.
 

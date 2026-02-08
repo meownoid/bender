@@ -26,6 +26,9 @@ AUTOCOMPLETE = {
         "dither": [
             "palette",
         ],
+        "exposure": [
+            "stops",
+        ],
         "extract_channel": [
             "channel",
             "mode",

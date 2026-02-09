@@ -33,6 +33,12 @@ AUTOCOMPLETE = {
             "channel",
             "mode",
         ],
+        "film-grain": [
+            "amount",
+            "monochrome",
+            "seed",
+            "size",
+        ],
     },
     "process": {
         "delay": [

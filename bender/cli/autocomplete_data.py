@@ -17,6 +17,12 @@ AUTOCOMPLETE = {
         ],
     },
     "edit": {
+        "bloom": [
+            "buckets",
+            "intensity",
+            "radius",
+            "threshold",
+        ],
         "blur-c": [
             "radius",
         ],
@@ -33,7 +39,7 @@ AUTOCOMPLETE = {
             "channel",
             "mode",
         ],
-        "film-grain": [
+        "grain": [
             "amount",
             "monochrome",
             "seed",

@@ -4,6 +4,7 @@ import numpy as np
 from PIL import Image
 
 from bender.editor import OneToOneEditor
+from bender.editors.utils import LUMA_WEIGHTS, float_rgb_to_uint8, image_to_float_rgb
 from bender.entity import entity
 from bender.parameter import ChoiceParameter
 
@@ -28,8 +29,6 @@ BAYER16: Final[np.ndarray] = np.array(
     ],
     dtype=np.uint8,
 )
-
-LUMA_WEIGHTS: Final[np.ndarray] = np.array([0.299, 0.587, 0.114], dtype=np.float32)
 
 EGA16: Final[np.ndarray] = np.array(
     [
@@ -63,7 +62,7 @@ PALETTES: Final[dict[str, np.ndarray]] = {
 
 
 def _apply_palette_dither(image: Image.Image, palette: np.ndarray) -> Image.Image:
-    arr = np.asarray(image.convert("RGB"), dtype=np.float32) / 255.0
+    arr = image_to_float_rgb(image)
     height, width = arr.shape[:2]
 
     block = arr[::2, ::2]
@@ -81,8 +80,7 @@ def _apply_palette_dither(image: Image.Image, palette: np.ndarray) -> Image.Imag
     distances = distances.sum(axis=3)
     best_idx = np.argmin(distances, axis=2)
 
-    mapped = palette[best_idx]
-    mapped = np.clip(mapped * 255.0 + 0.5, 0.0, 255.0).astype(np.uint8)
+    mapped = float_rgb_to_uint8(palette[best_idx])
     return Image.fromarray(mapped, mode="RGB")
 
 

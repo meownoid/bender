@@ -2,6 +2,7 @@ import numpy as np
 from PIL import Image
 
 from bender.editors.exposure import ExposureEditor
+from bender.editors.utils import image_to_linear_rgb, linear_rgb_to_image
 
 
 def _make_image() -> tuple[Image.Image, np.ndarray]:
@@ -30,7 +31,8 @@ def test_exposure_increase_clips():
 
     result = editor.edit([image])
 
-    expected = np.clip(arr.astype(np.float32) * 2.0 + 0.5, 0.0, 255.0).astype(np.uint8)
+    linear = image_to_linear_rgb(image)
+    expected = np.asarray(linear_rgb_to_image(np.clip(linear * 2.0, 0.0, 1.0)))
     assert np.array_equal(np.asarray(result), expected)
 
 
@@ -40,5 +42,6 @@ def test_exposure_decrease():
 
     result = editor.edit([image])
 
-    expected = np.clip(arr.astype(np.float32) * 0.5 + 0.5, 0.0, 255.0).astype(np.uint8)
+    linear = image_to_linear_rgb(image)
+    expected = np.asarray(linear_rgb_to_image(np.clip(linear * 0.5, 0.0, 1.0)))
     assert np.array_equal(np.asarray(result), expected)

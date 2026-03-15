@@ -2,7 +2,7 @@ import numpy as np
 from PIL import Image
 
 from bender.editor import OneToOneEditor
-from bender.editors.utils import float_rgb_to_image, image_to_float_rgb
+from bender.editors.utils import image_to_linear_rgb, linear_rgb_to_image
 from bender.entity import entity
 from bender.parameter import BoolParameter, FloatParameter, IntParameter
 
@@ -50,7 +50,7 @@ class FilmGrainEditor(OneToOneEditor):
         if self.amount <= 0.0:
             return image.copy()
 
-        base = image_to_float_rgb(image)
+        base = image_to_linear_rgb(image)
         height, width = base.shape[:2]
 
         rng = np.random.default_rng(self.seed)
@@ -75,4 +75,4 @@ class FilmGrainEditor(OneToOneEditor):
                 noise = np.stack(channels, axis=2)
 
         noisy = np.clip(base + noise * self.amount, 0.0, 1.0)
-        return float_rgb_to_image(noisy)
+        return linear_rgb_to_image(noisy)

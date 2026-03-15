@@ -18,10 +18,8 @@ AUTOCOMPLETE = {
     },
     "edit": {
         "bloom": [
-            "buckets",
-            "intensity",
-            "radius",
-            "threshold",
+            "blend_mode",
+            "factor",
         ],
         "blur-c": [
             "radius",

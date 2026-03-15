@@ -2,6 +2,7 @@ import numpy as np
 from PIL import Image
 
 from bender.editor import OneToOneEditor
+from bender.editors.utils import image_to_linear_rgb, linear_rgb_to_image
 from bender.entity import entity
 from bender.parameter import FloatParameter
 
@@ -28,6 +29,6 @@ class ExposureEditor(OneToOneEditor):
             return image.copy()
 
         factor = 2.0**self.stops
-        arr = np.asarray(image.convert("RGB"), dtype=np.float32)
-        adjusted = np.clip(arr * factor + 0.5, 0.0, 255.0).astype(np.uint8)
-        return Image.fromarray(adjusted, mode="RGB")
+        linear = image_to_linear_rgb(image)
+        adjusted = np.clip(linear * factor, 0.0, 1.0)
+        return linear_rgb_to_image(adjusted)

@@ -2,6 +2,12 @@ import numpy as np
 from PIL import Image, ImageFilter
 
 from bender.editor import OneToOneEditor
+from bender.editors.utils import (
+    float_rgb_to_image,
+    image_to_float_rgb,
+    image_to_linear_rgb,
+    linear_rgb_to_image,
+)
 from bender.entity import entity
 from bender.parameter import FloatParameter, IntParameter
 
@@ -62,10 +68,9 @@ class CircularBlurEditor(OneToOneEditor):
             return image.copy()
         radius = int(self.radius)
         kernel = _disk_kernel(radius)
-        arr = np.asarray(image, dtype=np.float32)
-        blurred = _convolve_fft(arr, kernel)
-        blurred = np.clip(blurred + 0.5, 0.0, 255.0).astype(np.uint8)
-        return Image.fromarray(blurred, mode="RGB")
+        linear = image_to_linear_rgb(image)
+        blurred = _convolve_fft(linear, kernel)
+        return linear_rgb_to_image(blurred)
 
 
 @entity(
@@ -88,4 +93,6 @@ class GaussianBlurEditor(OneToOneEditor):
         if self.radius <= 0:
             return image.copy()
 
-        return image.filter(ImageFilter.GaussianBlur(radius=self.radius))
+        linear_image = float_rgb_to_image(image_to_linear_rgb(image))
+        blurred_linear = linear_image.filter(ImageFilter.GaussianBlur(radius=self.radius))
+        return linear_rgb_to_image(image_to_float_rgb(blurred_linear))

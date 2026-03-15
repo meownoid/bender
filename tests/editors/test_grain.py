@@ -2,6 +2,7 @@ import numpy as np
 from PIL import Image
 
 from bender.editors.grain import FilmGrainEditor
+from bender.editors.utils import image_to_linear_rgb, linear_rgb_to_image
 
 
 def _make_image() -> tuple[Image.Image, np.ndarray]:
@@ -18,7 +19,7 @@ def _make_image() -> tuple[Image.Image, np.ndarray]:
 def _apply_reference(
     arr: np.ndarray, amount: float, size: float, monochrome: bool, seed: int | None
 ) -> np.ndarray:
-    base = arr.astype(np.float32) / 255.0
+    base = image_to_linear_rgb(Image.fromarray(arr, mode="RGB"))
     height, width = base.shape[:2]
     rng = np.random.default_rng(seed)
 
@@ -48,7 +49,7 @@ def _apply_reference(
             noise = np.stack(channels, axis=2)
 
     noisy = np.clip(base + noise * amount, 0.0, 1.0)
-    return np.clip(noisy * 255.0 + 0.5, 0.0, 255.0).astype(np.uint8)
+    return np.asarray(linear_rgb_to_image(noisy))
 
 
 def test_film_grain_zero_returns_original():
